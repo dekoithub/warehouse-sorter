@@ -6,3 +6,6 @@ class Item:
         self.width = width
         self.height = height
         self.length = length
+
+    def __str__(self):
+        pass
