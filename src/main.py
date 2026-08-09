@@ -2,6 +2,7 @@ from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
 from models.controller import Controller
+from models.conveyor import Conveyor
 
 def main():
     item = Item(
@@ -36,6 +37,13 @@ def main():
     controller = Controller(
         scanner = scanner,
         wms=wms,
+    )
+
+    conveyor = Conveyor(
+        conveyor_id=1,
+        speed=1.5,
+        capacity=2,
+        is_available=True,
     )
 
 if __name__ == "__main__":
