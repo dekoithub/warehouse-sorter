@@ -3,6 +3,7 @@ from models.scanner import Scanner
 from models.wms import WMS
 from models.controller import Controller
 from models.conveyor import Conveyor
+from models.sensor import Sensor
 
 def main():
     item = Item(
@@ -44,6 +45,12 @@ def main():
         speed=1.5,
         capacity=2,
         is_available=True,
+    )
+
+    sensor = Sensor(
+        sensor_id=1,
+        position="Scanner",
+        is_active=True,
     )
 
 if __name__ == "__main__":
