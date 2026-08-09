@@ -1,5 +1,6 @@
 from models.item import Item
 from models.scanner import Scanner
+from models.wms import WMS
 
 def main():
     item = Item(
@@ -23,6 +24,11 @@ def main():
         error_rate=0.01,
     )
 
+    wms = WMS(
+        routes={},
+        available_destinations=[1, 2, 3, 4, 5],
+        is_available=True,
+    )
 
 if __name__ == "__main__":
     main()
