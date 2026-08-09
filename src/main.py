@@ -4,6 +4,7 @@ from models.wms import WMS
 from models.controller import Controller
 from models.conveyor import Conveyor
 from models.sensor import Sensor
+from models.buffer import Buffer
 
 def main():
     item = Item(
@@ -51,6 +52,11 @@ def main():
         sensor_id=1,
         position="Scanner",
         is_active=True,
+    )
+
+    buffer = Buffer(
+        buffer_id=1,
+        capacity=2,
     )
 
 if __name__ == "__main__":
