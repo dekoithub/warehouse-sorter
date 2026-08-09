@@ -1,6 +1,7 @@
 from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
+from models.controller import Controller
 
 def main():
     item = Item(
@@ -28,6 +29,13 @@ def main():
         routes={},
         available_destinations=[1, 2, 3, 4, 5],
         is_available=True,
+    )
+
+    wms.register_route(item.barcode, 5)
+
+    controller = Controller(
+        scanner = scanner,
+        wms=wms,
     )
 
 if __name__ == "__main__":
