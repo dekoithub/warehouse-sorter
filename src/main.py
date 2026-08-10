@@ -6,6 +6,7 @@ from models.conveyor import Conveyor
 from models.sensor import Sensor
 from models.buffer import Buffer
 from models.sorter import Sorter
+from models.output_bin import OutputBin
 
 def main():
     item = Item(
@@ -21,6 +22,21 @@ def main():
         status="CREATED",
         destination=None,
         location="Scanner",
+    )
+
+    second_item = Item(
+        id=2,
+        barcode="4601234567891",
+        weight=1.5,
+        width=200,
+        height=100,
+        length=250,
+        category="Books",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Sorter",
     )
 
     scanner = Scanner(
@@ -65,6 +81,11 @@ def main():
         supported_directions=[1, 2, 3, 4, 5],
         is_available=True,
     )
+
+    output_bin = OutputBin(
+        bin_id=1,
+        capacity=2,
+    )   
 
 if __name__ == "__main__":
     main()
