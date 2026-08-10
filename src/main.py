@@ -5,6 +5,7 @@ from models.controller import Controller
 from models.conveyor import Conveyor
 from models.sensor import Sensor
 from models.buffer import Buffer
+from models.sorter import Sorter
 
 def main():
     item = Item(
@@ -57,6 +58,12 @@ def main():
     buffer = Buffer(
         buffer_id=1,
         capacity=2,
+    )
+
+    sorter = Sorter(
+        sorter_id=1,
+        supported_directions=[1, 2, 3, 4, 5],
+        is_available=True,
     )
 
 if __name__ == "__main__":
