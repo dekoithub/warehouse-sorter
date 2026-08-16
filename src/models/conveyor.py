@@ -1,5 +1,7 @@
 from models.item import Item
 
+
+
 class Conveyor:
     def __init__(
             self,
@@ -16,6 +18,9 @@ class Conveyor:
         self.is_available = is_available
 
     def accept_item(self, item: Item):
+        if not self.is_available:
+            return False 
+        
         if len(self.items) >= self.capacity:
             return False
 
@@ -36,7 +41,6 @@ class Conveyor:
 
     def stop(self):
         self.status = "STOPPED"
-        self.speed = 0
 
     def start(self):
         self.status = "RUNNING"
