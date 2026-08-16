@@ -1,5 +1,6 @@
 from models.item import Item
 
+
 class OutputBin:
     def __init__(
         self,
@@ -14,7 +15,7 @@ class OutputBin:
         self.is_full = False
 
     def add_item(self, item: Item):
-        if self.is_full:
+        if not self.is_available():
             return False
         
         self.items.append(item)
