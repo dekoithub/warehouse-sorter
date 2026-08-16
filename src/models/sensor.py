@@ -1,5 +1,6 @@
 from models.item import Item
 
+
 class Sensor:
     def __init__(
             self,
@@ -21,7 +22,10 @@ class Sensor:
         return True
 
     def send_signal(self, item: Item):
-        return{
+        if not self.is_active:
+            return None
+
+        return {
             "sensor_id": self.sensor_id,
             "item_id": item.id,
             "position": self.position,
@@ -32,4 +36,5 @@ class Sensor:
 
     def report_error(self):
         self.status = "ERROR"
+        self.is_active = False
         return "Sensor error"
