@@ -7,6 +7,7 @@ from models.sensor import Sensor
 from models.buffer import Buffer
 from models.sorter import Sorter
 from models.output_bin import OutputBin
+from models.statistics import Statistics
 
 def main():
     item = Item(
@@ -86,6 +87,8 @@ def main():
         bin_id=1,
         capacity=2,
     )   
+
+    statistics = Statistics()
 
 if __name__ == "__main__":
     main()
