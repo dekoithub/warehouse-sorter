@@ -9,6 +9,7 @@ from models.sorter import Sorter
 from models.output_bin import OutputBin
 from models.statistics import Statistics
 
+
 def main():
     item = Item(
         id=1,
@@ -54,8 +55,8 @@ def main():
 
     wms.register_route(item.barcode, 5)
 
-    controller = Controller(
-        scanner = scanner,
+    controller=Controller(
+        scanner=scanner,
         wms=wms,
     )
 
