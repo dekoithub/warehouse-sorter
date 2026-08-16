@@ -6,7 +6,7 @@ class Scanner:
         self.scan_count = 0
 
     def detect_item(self):
-        return True
+        return self.is_active
 
     def scan(self, item):
         self.scan_count += 1
