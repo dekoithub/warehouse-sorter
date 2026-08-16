@@ -1,5 +1,8 @@
+from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
+
+
 
 class Controller:
     def __init__(
@@ -16,15 +19,15 @@ class Controller:
 
         self.statistics = None
 
-    def register_item(self, item):
+    def register_item(self, item: Item):
         return item
 
-    def request_route(self, barcode):
+    def request_route(self, barcode: str):
         return self.wms.get_destination(barcode)
 
-    def route_item(self, item):
+    def route_item(self, item: Item):
         destination = self.request_route(item.barcode)
-        item.destination = destination
+        item.set_destination(destination)
         return destination
 
     def handle_scan_error(self):
