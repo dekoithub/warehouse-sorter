@@ -1,5 +1,6 @@
 from models.item import Item
 
+
 class Sorter:
     def __init__(
         self,
@@ -19,13 +20,19 @@ class Sorter:
 
         return True
 
-    def sort_item(self, item: Item, directiom: int):
-        if not self.change_direction(directiom):
+    def sort_item(self, item: Item, direction: int):
+        if not self.is_available:
+            return False
+        
+        if not self.change_direction(direction):
             return False
 
         return item
 
     def send_item(self, item: Item):
+        if not self.is_available:
+            return False
+        
         return item
 
     def change_direction(self, direction: int):
@@ -40,4 +47,5 @@ class Sorter:
 
     def report_error(self):
         self.status = "ERROR"
+        self.is_available = False
         return "Sorter error"
