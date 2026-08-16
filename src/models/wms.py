@@ -3,7 +3,7 @@ class WMS:
         self.routes = routes
         self.available_destinations = available_destinations
         self.request_count = 0
-        self.status = "AVAILABLE"
+        self.status = "AVAILABLE" if is_available else "UNAVAILABLE"
         self.is_available = is_available
 
     def register_route(self, barcode, destination):
