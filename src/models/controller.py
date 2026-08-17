@@ -23,11 +23,24 @@ class Controller:
         return item
 
     def request_route(self, barcode: str):
-        return self.wms.get_destination(barcode)
+        destination = self.wms.get_destination(barcode)
+
+        if destination is None:
+            return None
+
+        if not self.wms.is_destination_available(destination):
+            return None
+
+        return destination
 
     def route_item(self, item: Item):
         destination = self.request_route(item.barcode)
+
+        if destination is None:
+            return None
+
         item.set_destination(destination)
+        
         return destination
 
     def handle_scan_error(self):

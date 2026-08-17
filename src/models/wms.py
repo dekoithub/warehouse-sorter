@@ -11,6 +11,10 @@ class WMS:
 
     def get_destination(self, barcode):
         self.request_count += 1
+
+        if not self.is_available:
+            return None
+        
         return self.routes.get(barcode)
 
     def remove_route(self, barcode):
