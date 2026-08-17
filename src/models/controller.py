@@ -3,7 +3,6 @@ from models.scanner import Scanner
 from models.wms import WMS
 
 
-
 class Controller:
     def __init__(
             self,
@@ -40,11 +39,12 @@ class Controller:
             return None
 
         item.set_destination(destination)
-        
+
         return destination
 
-    def handle_scan_error(self):
-        return "Scan error"
+    def handle_scan_error(self, item: Item):
+        item.change_status("ERROR")
+        return None
 
     def send_to_buffer(self, item):
         return item
@@ -55,5 +55,26 @@ class Controller:
     def update_statistics(self):
         return None
 
-    def process_sensor_event(self):
-        return "Sensor event processed"
+    def process_sensor_event(self, sensor_event: dict, item: Item):
+        if sensor_event is None:
+            return None
+
+        if sensor_event["item_id"] != item.id:
+            return None
+
+        if not self.scanner.detect_item():
+            return None
+
+        item.change_status("SCANNING")
+
+        barcode = self.scanner.scan(item)
+
+        if barcode is None:
+            return self.handle_scan_error(item)
+
+        barcode = self.scanner.send_result(barcode)
+
+        item.change_status("ROUTING")
+
+        return self.route_item(item)
+    
