@@ -67,6 +67,8 @@ def main():
         is_available=True,
     )
 
+    controller.conveyors.append(conveyor)
+
     sensor = Sensor(
         sensor_id=1,
         position="Scanner",

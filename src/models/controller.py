@@ -1,6 +1,7 @@
 from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
+from models.conveyor import Conveyor
 
 
 class Controller:
@@ -12,7 +13,7 @@ class Controller:
         self.scanner = scanner
         self.wms = wms
 
-        self.conveyors = []
+        self.conveyors: list[Conveyor] = []
         self.buffers = []
         self.output_bins = []
 
@@ -40,7 +41,18 @@ class Controller:
 
         item.set_destination(destination)
 
-        return destination
+        for conveyor in self.conveyors:
+            if conveyor.accept_item(item):
+                conveyor.start()
+
+                item.change_status("MOVING")
+                item.update_location(
+                    f"Conveyor {conveyor.conveyor_id}"
+                )
+
+                return destination
+
+        return None
 
     def handle_scan_error(self, item: Item):
         item.change_status("ERROR")
