@@ -2,6 +2,9 @@ from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
 from models.conveyor import Conveyor
+from models.buffer import Buffer
+from models.statistics import Statistics
+from models.output_bin import OutputBin
 
 
 class Controller:
@@ -14,10 +17,10 @@ class Controller:
         self.wms = wms
 
         self.conveyors: list[Conveyor] = []
-        self.buffers = []
-        self.output_bins = []
+        self.buffers: list[Buffer] = []
+        self.output_bins: list[OutputBin] = []
 
-        self.statistics = None
+        self.statistics: Statistics | None = None
 
     def register_item(self, item: Item):
         return item
@@ -37,6 +40,11 @@ class Controller:
         destination = self.request_route(item.barcode)
 
         if destination is None:
+            if self.statistics is not None:
+                self.statistics.register_routing_error()
+
+            self.send_to_manual_processing(item)
+
             return None
 
         item.set_destination(destination)
@@ -52,20 +60,46 @@ class Controller:
 
                 return destination
 
+        if self.send_to_buffer(item):
+            return destination
+
         return None
 
     def handle_scan_error(self, item: Item):
+        if self.statistics is not None:
+            self.statistics.register_scan_error()
+
         item.change_status("ERROR")
+        self.send_to_manual_processing(item)
+
         return None
 
-    def send_to_buffer(self, item):
-        return item
+    def send_to_buffer(self, item: Item):
+        for buffer in self.buffers:
+            if buffer.add_item(item):
+                item.change_status("BUFFERED")
+                item.update_location(
+                    f"Buffer {buffer.buffer_id}"
+                )
 
-    def send_to_manual_processing(self, item):
-        return item
+                if self.statistics is not None:
+                    self.statistics.register_buffer_usage()
+
+                return True
+
+        return False
+
+    def send_to_manual_processing(self, item: Item):
+        item.change_status("MANUAL_PROCESSING")
+        item.update_location("Manual Processing")
+
+        return True
 
     def update_statistics(self):
-        return None
+        if self.statistics is None:
+            return None
+
+        return self.statistics.generate_report()
 
     def process_sensor_event(self, sensor_event: dict, item: Item):
         if sensor_event is None:

@@ -55,7 +55,7 @@ def main():
 
     wms.register_route(item.barcode, 5)
 
-    controller=Controller(
+    controller = Controller(
         scanner=scanner,
         wms=wms,
     )
@@ -72,6 +72,12 @@ def main():
     sensor = Sensor(
         sensor_id=1,
         position="Scanner",
+        is_active=True,
+    )
+
+    sorter_sensor = Sensor(
+        sensor_id=2,
+        position="Sorter",
         is_active=True,
     )
 
@@ -92,6 +98,10 @@ def main():
     )   
 
     statistics = Statistics()
+
+    controller.buffers.append(buffer)
+    controller.output_bins.append(output_bin)
+    controller.statistics = statistics
 
 if __name__ == "__main__":
     main()
