@@ -93,7 +93,7 @@ def main():
     )
 
     output_bin = OutputBin(
-        bin_id=1,
+        bin_id=5,
         capacity=2,
     )   
 

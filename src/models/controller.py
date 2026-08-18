@@ -5,6 +5,7 @@ from models.conveyor import Conveyor
 from models.buffer import Buffer
 from models.statistics import Statistics
 from models.output_bin import OutputBin
+from models.sorter import Sorter
 
 
 class Controller:
@@ -63,6 +64,7 @@ class Controller:
         if self.send_to_buffer(item):
             return destination
 
+        self.send_to_manual_processing(item)
         return None
 
     def handle_scan_error(self, item: Item):
@@ -109,7 +111,7 @@ class Controller:
             return None
 
         if not self.scanner.detect_item():
-            return None
+            return self.handle_scan_error(item)
 
         item.change_status("SCANNING")
 
@@ -123,4 +125,69 @@ class Controller:
         item.change_status("ROUTING")
 
         return self.route_item(item)
-    
+
+    def process_sorter_event(
+        self,
+        sensor_event: dict,
+        item: Item,
+        sorter: Sorter,
+    ):
+        if sensor_event is None:
+            return None
+
+        if sensor_event["item_id"] != item.id:
+            return None
+
+        if item.destination is None:
+            self.send_to_manual_processing(item)
+            return None
+
+        if not sorter.accept_item(item):
+            if self.send_to_buffer(item):
+                return None
+
+            self.send_to_manual_processing(item)
+            return None
+
+        sorted_item = sorter.sort_item(
+            item,
+            item.destination,
+        )
+
+        if not sorted_item:
+            self.send_to_manual_processing(item)
+            return None
+
+        sent_item = sorter.send_item(sorted_item)
+
+        if not sent_item:
+            self.send_to_manual_processing(item)
+            return None
+
+        for output_bin in self.output_bins:
+            if output_bin.bin_id != sent_item.destination:
+                continue
+
+            if output_bin.add_item(sent_item):
+                sent_item.change_status("SORTED")
+                sent_item.update_location(
+                    f"OutputBin {output_bin.bin_id}"
+                )
+
+                if self.statistics is not None:
+                    self.statistics.register_sorted_item()
+
+                return sent_item
+
+            if self.send_to_buffer(sent_item):
+                return None
+
+            self.send_to_manual_processing(sent_item)
+            return None
+
+        if self.statistics is not None:
+            self.statistics.register_routing_error()
+
+        self.send_to_manual_processing(sent_item)
+
+        return None
