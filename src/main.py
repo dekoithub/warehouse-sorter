@@ -44,7 +44,7 @@ def main():
     scanner = Scanner(
         scanner_id=1,
         is_active=True,
-        error_rate=0.01,
+        error_rate=0.0,
     )
 
     wms = WMS(
@@ -95,7 +95,7 @@ def main():
     output_bin = OutputBin(
         bin_id=5,
         capacity=2,
-    )   
+    )
 
     statistics = Statistics()
 
@@ -103,5 +103,52 @@ def main():
     controller.output_bins.append(output_bin)
     controller.statistics = statistics
 
+    controller.register_item(item)
+
+    detected = sensor.detect_item(item)
+
+    if detected:
+        sensor_event = sensor.send_signal(item)
+
+        destination = controller.process_sensor_event(
+            sensor_event,
+            item,
+        )
+
+        if destination is not None:
+            released_item = conveyor.release_item()
+
+            if not conveyor.items:
+                conveyor.stop()
+
+            if released_item is not None:
+                released_item.update_location("Sorter Sensor")
+
+                sorter_detected = sorter_sensor.detect_item(
+                    released_item
+                )
+
+                if sorter_detected:
+                    sorter_event = sorter_sensor.send_signal(
+                        released_item
+                    )
+
+                    result = controller.process_sorter_event(
+                        sorter_event,
+                        released_item,
+                        sorter,
+                    )
+
+                    print("=== Final result ===")
+                    print("Result item:", result.id if result is not None else None,)
+                    print("Item status:", item.status)
+                    print("Item destination:", item.destination)
+                    print("Item location:", item.location)
+                    print("Sorter direction:", sorter.current_direction,)
+                    print("OutputBin load:", output_bin.current_load,)
+                    print("OutputBin items:", [stored_item.id for stored_item in output_bin.items],)
+                    print("Processed items:", statistics.processed_items,)
+                    print("Sorted items:", statistics.sorted_items,)
+                    
 if __name__ == "__main__":
     main()

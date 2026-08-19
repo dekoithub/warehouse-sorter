@@ -24,6 +24,9 @@ class Controller:
         self.statistics: Statistics | None = None
 
     def register_item(self, item: Item):
+        if self.statistics is not None:
+            self.statistics.register_processed_item()
+
         return item
 
     def request_route(self, barcode: str):
@@ -55,9 +58,7 @@ class Controller:
                 conveyor.start()
 
                 item.change_status("MOVING")
-                item.update_location(
-                    f"Conveyor {conveyor.conveyor_id}"
-                )
+                item.update_location(f"Conveyor {conveyor.conveyor_id}")
 
                 return destination
 
@@ -80,9 +81,7 @@ class Controller:
         for buffer in self.buffers:
             if buffer.add_item(item):
                 item.change_status("BUFFERED")
-                item.update_location(
-                    f"Buffer {buffer.buffer_id}"
-                )
+                item.update_location(f"Buffer {buffer.buffer_id}")
 
                 if self.statistics is not None:
                     self.statistics.register_buffer_usage()
@@ -94,6 +93,9 @@ class Controller:
     def send_to_manual_processing(self, item: Item):
         item.change_status("MANUAL_PROCESSING")
         item.update_location("Manual Processing")
+
+        if self.statistics is not None:
+            self.statistics.register_manual_processing_item()
 
         return True
 
@@ -170,9 +172,7 @@ class Controller:
 
             if output_bin.add_item(sent_item):
                 sent_item.change_status("SORTED")
-                sent_item.update_location(
-                    f"OutputBin {output_bin.bin_id}"
-                )
+                sent_item.update_location(f"OutputBin {output_bin.bin_id}")
 
                 if self.statistics is not None:
                     self.statistics.register_sorted_item()
@@ -189,5 +189,30 @@ class Controller:
             self.statistics.register_routing_error()
 
         self.send_to_manual_processing(sent_item)
+
+        return None
+    
+    def release_from_buffer(self, buffer: Buffer):
+        item = buffer.release_item()
+
+        if item is None:
+            return None
+
+        for conveyor in self.conveyors:
+            if conveyor.accept_item(item):
+                conveyor.start()
+
+                item.change_status("MOVING")
+                item.update_location(f"Conveyor {conveyor.conveyor_id}")
+
+                return item
+
+        if buffer.add_item(item):
+            item.change_status("BUFFERED")
+            item.update_location(f"Buffer {buffer.buffer_id}")
+
+            return None
+
+        self.send_to_manual_processing(item)
 
         return None
