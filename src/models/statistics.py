@@ -29,6 +29,30 @@ class Statistics:
         self.buffer_usage += 1
 
     def generate_report(self):
+        average_conveyor_load = (
+            sum(self.conveyor_load.values()) / len(self.conveyor_load)
+            if self.conveyor_load
+            else 0
+        )
+
+        average_output_bin_load = (
+            sum(self.output_bin_load.values()) / len(self.output_bin_load)
+            if self.output_bin_load
+            else 0
+        )
+
+        throughput = (
+            self.processed_items / self.simulation_time
+            if self.simulation_time > 0
+            else 0
+        )
+
+        success_rate = (
+            self.sorted_items / self.processed_items * 100
+            if self.processed_items > 0
+            else 0
+        )
+
         return {
             "processed_items": self.processed_items,
             "sorted_items": self.sorted_items,
@@ -38,7 +62,11 @@ class Statistics:
             "buffer_usage": self.buffer_usage,
             "conveyor_load": self.conveyor_load,
             "output_bin_load": self.output_bin_load,
+            "average_conveyor_load": average_conveyor_load,
+            "average_output_bin_load": average_output_bin_load,
             "simulation_time": self.simulation_time,
+            "throughput": throughput,
+            "success_rate": success_rate,
         }
 
     def reset(self):

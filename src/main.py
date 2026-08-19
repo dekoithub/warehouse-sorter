@@ -10,6 +10,64 @@ from models.output_bin import OutputBin
 from models.statistics import Statistics
 
 
+def process_item(
+    item: Item,
+    controller: Controller,
+    sensor: Sensor,
+    sorter_sensor: Sensor,
+    sorter: Sorter,
+):
+    controller.register_item(item)
+
+    detected = sensor.detect_item(item)
+
+    if not detected:
+        return item
+
+    sensor_event = sensor.send_signal(item)
+
+    controller.process_sensor_event(sensor_event, item)
+
+    if item.status != "MOVING":
+        return item
+
+    item_conveyor = None
+
+    for conveyor in controller.conveyors:
+        if item in conveyor.items:
+            item_conveyor = conveyor
+            break
+
+    if item_conveyor is None:
+        controller.send_to_manual_processing(item)
+        return item
+
+    released_item = item_conveyor.release_item()
+
+    if not item_conveyor.items:
+        item_conveyor.stop()
+
+    if released_item is None:
+        controller.send_to_manual_processing(item)
+        return item
+
+    released_item.update_location("Sorter Sensor")
+
+    sorter_detected = sorter_sensor.detect_item(released_item)
+
+    if not sorter_detected:
+        controller.send_to_manual_processing(released_item)
+        return released_item
+
+    sorter_event = sorter_sensor.send_signal(released_item)
+
+    controller.process_sorter_event(sorter_event, released_item, sorter)
+
+    controller.update_statistics()
+
+    return released_item
+
+
 def main():
     item = Item(
         id=1,
@@ -103,52 +161,24 @@ def main():
     controller.output_bins.append(output_bin)
     controller.statistics = statistics
 
-    controller.register_item(item)
+    result = process_item(
+        item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
 
-    detected = sensor.detect_item(item)
-
-    if detected:
-        sensor_event = sensor.send_signal(item)
-
-        destination = controller.process_sensor_event(
-            sensor_event,
-            item,
-        )
-
-        if destination is not None:
-            released_item = conveyor.release_item()
-
-            if not conveyor.items:
-                conveyor.stop()
-
-            if released_item is not None:
-                released_item.update_location("Sorter Sensor")
-
-                sorter_detected = sorter_sensor.detect_item(
-                    released_item
-                )
-
-                if sorter_detected:
-                    sorter_event = sorter_sensor.send_signal(
-                        released_item
-                    )
-
-                    result = controller.process_sorter_event(
-                        sorter_event,
-                        released_item,
-                        sorter,
-                    )
-
-                    print("=== Final result ===")
-                    print("Result item:", result.id if result is not None else None,)
-                    print("Item status:", item.status)
-                    print("Item destination:", item.destination)
-                    print("Item location:", item.location)
-                    print("Sorter direction:", sorter.current_direction,)
-                    print("OutputBin load:", output_bin.current_load,)
-                    print("OutputBin items:", [stored_item.id for stored_item in output_bin.items],)
-                    print("Processed items:", statistics.processed_items,)
-                    print("Sorted items:", statistics.sorted_items,)
+    print("=== Final result ===")
+    print("Result item:", result.id if result is not None else None,)
+    print("Item status:", item.status)
+    print("Item destination:", item.destination)
+    print("Item location:", item.location)
+    print("Sorter direction:", sorter.current_direction,)
+    print("OutputBin load:", output_bin.current_load,)
+    print("OutputBin items:", [stored_item.id for stored_item in output_bin.items],)
+    print("Processed items:", statistics.processed_items,)
+    print("Sorted items:", statistics.sorted_items,)
                     
 if __name__ == "__main__":
     main()

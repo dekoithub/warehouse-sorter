@@ -103,6 +103,12 @@ class Controller:
         if self.statistics is None:
             return None
 
+        for conveyor in self.conveyors:
+            self.statistics.conveyor_load[conveyor.conveyor_id] = len(conveyor.items)
+
+        for output_bin in self.output_bins:
+            self.statistics.output_bin_load[output_bin.bin_id] = output_bin.current_load
+
         return self.statistics.generate_report()
 
     def process_sensor_event(self, sensor_event: dict, item: Item):
