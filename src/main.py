@@ -10,28 +10,13 @@ from models.output_bin import OutputBin
 from models.statistics import Statistics
 
 
-def process_item(
-    item: Item,
-    controller: Controller,
-    sensor: Sensor,
-    sorter_sensor: Sensor,
-    sorter: Sorter,
+def process_conveyor_to_sorter(
+        item: Item,
+        controller: Controller,
+        sorter_sensor: Sensor,
+        sorter: Sorter,
 ):
-    controller.register_item(item)
-
-    detected = sensor.detect_item(item)
-
-    if not detected:
-        return item
-
-    sensor_event = sensor.send_signal(item)
-
-    controller.process_sensor_event(sensor_event, item)
-
-    if item.status != "MOVING":
-        return item
-
-    item_conveyor = None
+    item_conveyor = None 
 
     for conveyor in controller.conveyors:
         if item in conveyor.items:
@@ -68,6 +53,38 @@ def process_item(
     return released_item
 
 
+def process_item(
+    item: Item,
+    controller: Controller,
+    sensor: Sensor,
+    sorter_sensor: Sensor,
+    sorter: Sorter,
+):
+    controller.register_item(item)
+
+    detected = sensor.detect_item(item)
+
+    if not detected:
+        return item
+
+    sensor_event = sensor.send_signal(item)
+
+    controller.process_sensor_event(
+        sensor_event,
+        item,
+    )
+
+    if item.status != "MOVING":
+        return item
+
+    return process_conveyor_to_sorter(
+        item,
+        controller,
+        sorter_sensor,
+        sorter,
+    )
+
+
 def main():
     item = Item(
         id=1,
@@ -96,8 +113,25 @@ def main():
         is_flammable=False,
         status="CREATED",
         destination=None,
-        location="Sorter",
+        location="Scanner",
     )
+
+    third_item = Item(
+        id=3,
+        barcode="4601234567892",
+        weight=3.0,
+        width=300,
+        height=180,
+        length=350,
+        category="Home",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    items = [item, second_item, third_item]
 
     scanner = Scanner(
         scanner_id=1,
@@ -112,6 +146,8 @@ def main():
     )
 
     wms.register_route(item.barcode, 5)
+    wms.register_route(second_item.barcode, 5)
+    wms.register_route(third_item.barcode, 5)
 
     controller = Controller(
         scanner=scanner,
@@ -161,24 +197,48 @@ def main():
     controller.output_bins.append(output_bin)
     controller.statistics = statistics
 
-    result = process_item(
-        item,
-        controller,
-        sensor,
-        sorter_sensor,
-        sorter,
-    )
+    for current_item in items:
+        process_item(
+            current_item,
+            controller,
+            sensor,
+            sorter_sensor,
+            sorter,
+        )
 
-    print("=== Final result ===")
-    print("Result item:", result.id if result is not None else None,)
-    print("Item status:", item.status)
-    print("Item destination:", item.destination)
-    print("Item location:", item.location)
-    print("Sorter direction:", sorter.current_direction,)
-    print("OutputBin load:", output_bin.current_load,)
-    print("OutputBin items:", [stored_item.id for stored_item in output_bin.items],)
-    print("Processed items:", statistics.processed_items,)
-    print("Sorted items:", statistics.sorted_items,)
+    output_bin.remove_all_items()
+
+    buffered_item = controller.release_from_buffer(buffer)
+
+    if buffered_item is not None:
+        process_conveyor_to_sorter(
+            buffered_item,
+            controller,
+            sorter_sensor,
+            sorter,
+        )
+
+    for current_item in items:
+        print()
+        print("=== Item result ===")
+        print("Item id:", current_item.id)
+        print("Status:", current_item.status)
+        print("Destination:", current_item.destination)
+        print("Location:", current_item.location)
+
+    report = controller.update_statistics()
+
+    print()
+    print("=== System report ===")
+    print("Processed items:", report["processed_items"])
+    print("Sorted items:", report["sorted_items"])
+    print("Manual processing items:", report["manual_processing_items"])
+    print("Scan errors:", report["scan_errors"])
+    print("Routing errors:", report["routing_errors"])
+    print("Buffer usage:", report["buffer_usage"])
+    print("Conveyor load:", report["conveyor_load"])
+    print("OutputBin load:", report["output_bin_load"])
+    print("Success rate:", report["success_rate"])
                     
 if __name__ == "__main__":
     main()
