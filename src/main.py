@@ -455,6 +455,7 @@ def main():
     items.append(tenth_item)
 
     sensor.is_active = False
+    sensor.status = "INACTIVE"
 
     process_item(
         eleventh_item,
@@ -465,6 +466,7 @@ def main():
     )
 
     sensor.is_active = True
+    sensor.status = "ACTIVE"
 
     items.append(eleventh_item)
 

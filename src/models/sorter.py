@@ -18,12 +18,18 @@ class Sorter:
         if not self.is_available:
             return False
 
+        if item is None:
+            return False
+
         return True
 
     def sort_item(self, item: Item, direction: int):
         if not self.is_available:
             return False
-        
+
+        if item is None:
+            return False
+
         if not self.change_direction(direction):
             return False
 
@@ -32,10 +38,16 @@ class Sorter:
     def send_item(self, item: Item):
         if not self.is_available:
             return False
-        
+
+        if item is None:
+            return False
+
         return item
 
     def change_direction(self, direction: int):
+        if not self.is_available:
+            return False
+
         if direction not in self.supported_directions:
             return False
 

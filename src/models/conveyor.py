@@ -1,7 +1,6 @@
 from models.item import Item
 
 
-
 class Conveyor:
     def __init__(
             self,
@@ -28,6 +27,12 @@ class Conveyor:
         return True
 
     def move_items(self):
+        if not self.is_available:
+            return False
+
+        if self.status != "RUNNING":
+            return False
+
         return self.items
 
     def release_item(self):
@@ -41,9 +46,14 @@ class Conveyor:
 
     def stop(self):
         self.status = "STOPPED"
+        return True
 
     def start(self):
+        if not self.is_available:
+            return False
+
         self.status = "RUNNING"
+        return True
 
     def report_status(self):
         return self.status

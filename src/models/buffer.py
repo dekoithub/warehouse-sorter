@@ -42,6 +42,9 @@ class Buffer:
         return item
 
     def is_available(self):
+        if self.status == "ERROR":
+            return False
+
         return len(self.items) < self.capacity
 
     def report_status(self):

@@ -91,6 +91,9 @@ class Controller:
         return False
 
     def send_to_manual_processing(self, item: Item):
+        if item.status == "MANUAL_PROCESSING":
+            return True
+
         item.change_status("MANUAL_PROCESSING")
         item.update_location("Manual Processing")
 
