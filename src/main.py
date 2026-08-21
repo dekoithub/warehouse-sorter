@@ -1,3 +1,5 @@
+import time
+
 from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
@@ -65,6 +67,7 @@ def process_item(
     detected = sensor.detect_item(item)
 
     if not detected:
+        controller.send_to_manual_processing(item)
         return item
 
     sensor_event = sensor.send_signal(item)
@@ -236,6 +239,36 @@ def main():
         location="Scanner",
     )
 
+    eleventh_item = Item(
+        id=11,
+        barcode="4601234567900",
+        weight=1.7,
+        width=205,
+        height=115,
+        length=255,
+        category="Accessories",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    twelfth_item = Item(
+        id=12,
+        barcode="4601234567901",
+        weight=2.4,
+        width=230,
+        height=130,
+        length=300,
+        category="Decor",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
     items = [item, second_item, third_item, fourth_item]
 
     scanner = Scanner(
@@ -259,6 +292,8 @@ def main():
     wms.register_route(eighth_item.barcode, 5)
     wms.register_route(ninth_item.barcode, 5)
     wms.register_route(tenth_item.barcode, 5)
+    wms.register_route(eleventh_item.barcode, 5)
+    wms.register_route(twelfth_item.barcode, 4)
 
     controller = Controller(
         scanner=scanner,
@@ -307,6 +342,8 @@ def main():
     controller.buffers.append(buffer)
     controller.output_bins.append(output_bin)
     controller.statistics = statistics
+
+    start_time = time.perf_counter()
 
     for current_item in items:
         process_item(
@@ -417,6 +454,34 @@ def main():
 
     items.append(tenth_item)
 
+    sensor.is_active = False
+
+    process_item(
+        eleventh_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    sensor.is_active = True
+
+    items.append(eleventh_item)
+
+    process_item(
+        twelfth_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    items.append(twelfth_item)
+
+    end_time = time.perf_counter()
+
+    statistics.simulation_time = end_time - start_time
+
     for current_item in items:
         print()
         print("=== Item result ===")
@@ -438,6 +503,8 @@ def main():
     print("Conveyor load:", report["conveyor_load"])
     print("OutputBin load:", report["output_bin_load"])
     print("Success rate:", report["success_rate"])
+    print("Simulation time:", report["simulation_time"])
+    print("Throughput:", report["throughput"])
                     
 if __name__ == "__main__":
     main()
