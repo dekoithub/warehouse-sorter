@@ -16,7 +16,7 @@ def process_conveyor_to_sorter(
         sorter_sensor: Sensor,
         sorter: Sorter,
 ):
-    item_conveyor = None 
+    item_conveyor = None
 
     for conveyor in controller.conveyors:
         if item in conveyor.items:
@@ -131,7 +131,112 @@ def main():
         location="Scanner",
     )
 
-    items = [item, second_item, third_item]
+    fourth_item = Item(
+        id=4,
+        barcode="4601234567893",
+        weight=2.0,
+        width=220,
+        height=120,
+        length=280,
+        category="Clothes",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    fifth_item = Item(
+        id=5,
+        barcode="4601234567894",
+        weight=1.8,
+        width=210,
+        height=110,
+        length=260,
+        category="Toys",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    sixth_item = Item(
+        id=6,
+        barcode="4601234567895",
+        weight=2.2,
+        width=230,
+        height=130,
+        length=290,
+        category="Sports",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    seventh_item = Item(
+        id=7,
+        barcode="4601234567896",
+        weight=1.9,
+        width=210,
+        height=120,
+        length=270,
+        category="Kitchen",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    eighth_item = Item(
+        id=8,
+        barcode="4601234567897",
+        weight=2.6,
+        width=240,
+        height=140,
+        length=310,
+        category="Office",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    ninth_item = Item(
+        id=9,
+        barcode="4601234567898",
+        weight=2.1,
+        width=225,
+        height=125,
+        length=285,
+        category="Garden",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    tenth_item = Item(
+        id=10,
+        barcode="4601234567899",
+        weight=2.3,
+        width=235,
+        height=135,
+        length=295,
+        category="Tools",
+        delivery_type="Courier",
+        is_flammable=False,
+        status="CREATED",
+        destination=None,
+        location="Scanner",
+    )
+
+    items = [item, second_item, third_item, fourth_item]
 
     scanner = Scanner(
         scanner_id=1,
@@ -148,6 +253,12 @@ def main():
     wms.register_route(item.barcode, 5)
     wms.register_route(second_item.barcode, 5)
     wms.register_route(third_item.barcode, 5)
+    wms.register_route(fifth_item.barcode, 5)
+    wms.register_route(sixth_item.barcode, 5)
+    wms.register_route(seventh_item.barcode, 5)
+    wms.register_route(eighth_item.barcode, 5)
+    wms.register_route(ninth_item.barcode, 5)
+    wms.register_route(tenth_item.barcode, 5)
 
     controller = Controller(
         scanner=scanner,
@@ -217,6 +328,94 @@ def main():
             sorter_sensor,
             sorter,
         )
+
+    scanner.error_rate = 1.0
+
+    process_item(
+        fifth_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    scanner.error_rate = 0.0
+
+    items.append(fifth_item)
+
+    sorter.is_available = False
+
+    process_item(
+        sixth_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    sorter.is_available = True
+
+    items.append(sixth_item)
+
+    sorter.is_available = False
+
+    process_item(
+        seventh_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    process_item(
+        eighth_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    sorter.is_available = True
+
+    items.append(seventh_item)
+    items.append(eighth_item)
+
+    wms.is_available = False
+    wms.status = "UNAVAILABLE"
+
+    process_item(
+        ninth_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    wms.is_available = True
+    wms.status = "AVAILABLE"
+
+    items.append(ninth_item)
+
+    backup_buffer = Buffer(
+        buffer_id=2,
+        capacity=2,
+    )
+
+    controller.buffers.append(backup_buffer)
+
+    conveyor.is_available = False
+
+    process_item(
+        tenth_item,
+        controller,
+        sensor,
+        sorter_sensor,
+        sorter,
+    )
+
+    conveyor.is_available = True
+
+    items.append(tenth_item)
 
     for current_item in items:
         print()
