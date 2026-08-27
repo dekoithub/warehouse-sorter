@@ -1,8 +1,13 @@
 __pycache__/
 *.pyc
+.pytest_cache/
 
 .venv/
 venv/
 
+.gitignore
+
 .vscode/
 .idea/
+
+src/warehouse_sorter.egg-info/
