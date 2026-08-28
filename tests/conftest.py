@@ -1,5 +1,6 @@
 import pytest
 
+from models.enums import ItemStatus
 from models.item import Item
 
 
@@ -17,7 +18,7 @@ def item():
         category="Electronics",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )

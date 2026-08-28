@@ -1,5 +1,8 @@
+from models.enums import ItemStatus
+
+
 class Item:
-    def __init__(self, id, barcode, weight, width, height, length, category, delivery_type, is_flammable, status, destination, location):
+    def __init__(self, id, barcode, weight, width, height, length, category, delivery_type, is_flammable, status: ItemStatus, destination, location):
         self.id = id
         self.barcode = barcode
         self.weight = weight
@@ -29,7 +32,7 @@ class Item:
             "location": self.location,
         }
 
-    def change_status(self, new_status):
+    def change_status(self, new_status: ItemStatus):
         self.status = new_status
 
     def set_destination(self, destination):

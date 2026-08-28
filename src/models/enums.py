@@ -1,0 +1,12 @@
+from enum import StrEnum
+
+
+class ItemStatus(StrEnum):
+    CREATED = "CREATED"
+    SCANNING = "SCANNING"
+    ROUTING = "ROUTING"
+    MOVING = "MOVING"
+    BUFFERED = "BUFFERED"
+    SORTED = "SORTED"
+    MANUAL_PROCESSING = "MANUAL_PROCESSING"
+    ERROR = "ERROR"
