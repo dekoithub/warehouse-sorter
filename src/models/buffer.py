@@ -1,3 +1,5 @@
+from models.enums import BufferStatus
+
 from models.item import Item
 
 
@@ -10,7 +12,7 @@ class Buffer:
         self.buffer_id = buffer_id
         self.capacity = capacity
         self.items: list[Item] = []
-        self.status = "EMPTY"
+        self.status = BufferStatus.EMPTY
         self.is_full = False
 
     def add_item(self, item: Item):
@@ -21,9 +23,9 @@ class Buffer:
 
         if len(self.items) >= self.capacity:
             self.is_full = True
-            self.status = "FULL"
+            self.status = BufferStatus.FULL
         else:
-            self.status = "OCCUPIED"
+            self.status = BufferStatus.OCCUPIED
 
         return True
 
@@ -35,14 +37,14 @@ class Buffer:
         self.is_full = False
 
         if self.items:
-            self.status = "OCCUPIED"
+            self.status = BufferStatus.OCCUPIED
         else:
-            self.status = "EMPTY"
+            self.status = BufferStatus.EMPTY
 
         return item
 
     def is_available(self):
-        if self.status == "ERROR":
+        if self.status == BufferStatus.ERROR:
             return False
 
         return len(self.items) < self.capacity
@@ -51,5 +53,5 @@ class Buffer:
         return self.status
 
     def report_error(self):
-        self.status = "ERROR"
+        self.status = BufferStatus.ERROR
         return "Buffer error"

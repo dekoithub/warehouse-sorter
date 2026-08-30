@@ -10,3 +10,31 @@ class ItemStatus(StrEnum):
     SORTED = "SORTED"
     MANUAL_PROCESSING = "MANUAL_PROCESSING"
     ERROR = "ERROR"
+
+class SensorStatus(StrEnum):
+    ACTIVE = "ACTIVE"
+    INACTIVE = "INACTIVE"
+    ERROR = "ERROR"
+
+class BufferStatus(StrEnum):
+    EMPTY = "EMPTY"
+    OCCUPIED = "OCCUPIED"
+    FULL = "FULL"
+    ERROR = "ERROR"
+
+class OutputBinStatus(StrEnum):
+    EMPTY = "EMPTY"
+    OCCUPIED = "OCCUPIED"
+    FULL = "FULL"
+
+class SorterStatus(StrEnum):
+    IDLE = "IDLE"
+    ERROR = "ERROR"
+
+class ConveyorStatus(StrEnum):
+    STOPPED = "STOPPED"
+    RUNNING = "RUNNING"
+
+class WMSStatus(StrEnum):
+    AVAILABLE = "AVAILABLE"
+    UNAVAILABLE = "UNAVAILABLE"

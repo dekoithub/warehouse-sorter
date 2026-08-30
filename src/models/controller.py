@@ -1,3 +1,5 @@
+from models.enums import ItemStatus
+
 from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
@@ -57,7 +59,7 @@ class Controller:
             if conveyor.accept_item(item):
                 conveyor.start()
 
-                item.change_status("MOVING")
+                item.change_status(ItemStatus.MOVING)
                 item.update_location(f"Conveyor {conveyor.conveyor_id}")
 
                 return destination
@@ -72,7 +74,7 @@ class Controller:
         if self.statistics is not None:
             self.statistics.register_scan_error()
 
-        item.change_status("ERROR")
+        item.change_status(ItemStatus.ERROR)
         self.send_to_manual_processing(item)
 
         return None
@@ -80,7 +82,7 @@ class Controller:
     def send_to_buffer(self, item: Item):
         for buffer in self.buffers:
             if buffer.add_item(item):
-                item.change_status("BUFFERED")
+                item.change_status(ItemStatus.BUFFERED)
                 item.update_location(f"Buffer {buffer.buffer_id}")
 
                 if self.statistics is not None:
@@ -91,10 +93,10 @@ class Controller:
         return False
 
     def send_to_manual_processing(self, item: Item):
-        if item.status == "MANUAL_PROCESSING":
+        if item.status == ItemStatus.MANUAL_PROCESSING:
             return True
 
-        item.change_status("MANUAL_PROCESSING")
+        item.change_status(ItemStatus.MANUAL_PROCESSING)
         item.update_location("Manual Processing")
 
         if self.statistics is not None:
@@ -124,7 +126,7 @@ class Controller:
         if not self.scanner.detect_item():
             return self.handle_scan_error(item)
 
-        item.change_status("SCANNING")
+        item.change_status(ItemStatus.SCANNING)
 
         barcode = self.scanner.scan(item)
 
@@ -133,7 +135,7 @@ class Controller:
 
         barcode = self.scanner.send_result(barcode)
 
-        item.change_status("ROUTING")
+        item.change_status(ItemStatus.ROUTING)
 
         return self.route_item(item)
 
@@ -180,7 +182,7 @@ class Controller:
                 continue
 
             if output_bin.add_item(sent_item):
-                sent_item.change_status("SORTED")
+                sent_item.change_status(ItemStatus.SORTED)
                 sent_item.update_location(f"OutputBin {output_bin.bin_id}")
 
                 if self.statistics is not None:
@@ -211,13 +213,13 @@ class Controller:
             if conveyor.accept_item(item):
                 conveyor.start()
 
-                item.change_status("MOVING")
+                item.change_status(ItemStatus.MOVING)
                 item.update_location(f"Conveyor {conveyor.conveyor_id}")
 
                 return item
 
         if buffer.add_item(item):
-            item.change_status("BUFFERED")
+            item.change_status(ItemStatus.BUFFERED)
             item.update_location(f"Buffer {buffer.buffer_id}")
 
             return None

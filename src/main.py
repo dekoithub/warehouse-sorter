@@ -1,4 +1,5 @@
 import time
+from models.enums import ItemStatus, SensorStatus, WMSStatus
 
 from models.item import Item
 from models.scanner import Scanner
@@ -77,7 +78,7 @@ def process_item(
         item,
     )
 
-    if item.status != "MOVING":
+    if item.status != ItemStatus.MOVING:
         return item
 
     return process_conveyor_to_sorter(
@@ -99,7 +100,7 @@ def main():
         category="Electronics",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -114,7 +115,7 @@ def main():
         category="Books",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -129,7 +130,7 @@ def main():
         category="Home",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -144,7 +145,7 @@ def main():
         category="Clothes",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -159,7 +160,7 @@ def main():
         category="Toys",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -174,7 +175,7 @@ def main():
         category="Sports",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -189,7 +190,7 @@ def main():
         category="Kitchen",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -204,7 +205,7 @@ def main():
         category="Office",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -219,7 +220,7 @@ def main():
         category="Garden",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -234,7 +235,7 @@ def main():
         category="Tools",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -249,7 +250,7 @@ def main():
         category="Accessories",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -264,7 +265,7 @@ def main():
         category="Decor",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -418,7 +419,7 @@ def main():
     items.append(eighth_item)
 
     wms.is_available = False
-    wms.status = "UNAVAILABLE"
+    wms.status = WMSStatus.UNAVAILABLE
 
     process_item(
         ninth_item,
@@ -429,7 +430,7 @@ def main():
     )
 
     wms.is_available = True
-    wms.status = "AVAILABLE"
+    wms.status = WMSStatus.AVAILABLE
 
     items.append(ninth_item)
 
@@ -455,7 +456,7 @@ def main():
     items.append(tenth_item)
 
     sensor.is_active = False
-    sensor.status = "INACTIVE"
+    sensor.status = SensorStatus.INACTIVE
 
     process_item(
         eleventh_item,
@@ -466,7 +467,7 @@ def main():
     )
 
     sensor.is_active = True
-    sensor.status = "ACTIVE"
+    sensor.status = SensorStatus.ACTIVE
 
     items.append(eleventh_item)
 

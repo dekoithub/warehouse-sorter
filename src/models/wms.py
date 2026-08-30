@@ -1,9 +1,15 @@
+from models.enums import WMSStatus
+
 class WMS:
     def __init__(self, routes, available_destinations, is_available):
         self.routes = routes
         self.available_destinations = available_destinations
         self.request_count = 0
-        self.status = "AVAILABLE" if is_available else "UNAVAILABLE"
+        self.status = (
+            WMSStatus.AVAILABLE
+            if is_available
+            else WMSStatus.UNAVAILABLE
+        )
         self.is_available = is_available
 
     def register_route(self, barcode, destination):

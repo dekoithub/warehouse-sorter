@@ -1,3 +1,5 @@
+from models.enums import ConveyorStatus
+
 from models.item import Item
 
 
@@ -13,7 +15,7 @@ class Conveyor:
         self.speed = speed
         self.capacity = capacity
         self.items: list[Item] = []
-        self.status = "STOPPED"
+        self.status = ConveyorStatus.STOPPED
         self.is_available = is_available
 
     def accept_item(self, item: Item):
@@ -30,7 +32,7 @@ class Conveyor:
         if not self.is_available:
             return False
 
-        if self.status != "RUNNING":
+        if self.status != ConveyorStatus.RUNNING:
             return False
 
         return self.items
@@ -45,14 +47,14 @@ class Conveyor:
         self.speed = new_speed
 
     def stop(self):
-        self.status = "STOPPED"
+        self.status = ConveyorStatus.STOPPED
         return True
 
     def start(self):
         if not self.is_available:
             return False
 
-        self.status = "RUNNING"
+        self.status = ConveyorStatus.RUNNING
         return True
 
     def report_status(self):

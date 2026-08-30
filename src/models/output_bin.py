@@ -1,3 +1,6 @@
+from models.enums import OutputBinStatus
+
+
 from models.item import Item
 
 
@@ -11,7 +14,7 @@ class OutputBin:
         self.capacity = capacity
         self.items: list[Item] = []
         self.current_load = 0
-        self.status = "EMPTY"
+        self.status = OutputBinStatus.EMPTY
         self.is_full = False
 
     def add_item(self, item: Item):
@@ -23,9 +26,9 @@ class OutputBin:
 
         if self.current_load >= self.capacity:
             self.is_full = True
-            self.status = "FULL"
+            self.status = OutputBinStatus.FULL
         else:
-            self.status = "OCCUPIED"
+            self.status = OutputBinStatus.OCCUPIED
 
         return True
 
@@ -33,7 +36,7 @@ class OutputBin:
         self.items.clear()
         self.current_load = 0
         self.is_full = False
-        self.status = "EMPTY"
+        self.status = OutputBinStatus.EMPTY
 
     def is_available(self):
         return self.current_load < self.capacity

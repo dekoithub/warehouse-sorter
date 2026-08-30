@@ -1,3 +1,5 @@
+from models.enums import SorterStatus
+
 from models.item import Item
 
 
@@ -9,7 +11,7 @@ class Sorter:
         is_available: bool,
     ):
         self.sorter_id = sorter_id
-        self.status = "IDLE"
+        self.status = SorterStatus.IDLE
         self.current_direction = None
         self.supported_directions = supported_directions
         self.is_available = is_available
@@ -58,6 +60,6 @@ class Sorter:
         return self.status
 
     def report_error(self):
-        self.status = "ERROR"
+        self.status = SorterStatus.ERROR
         self.is_available = False
         return "Sorter error"

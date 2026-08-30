@@ -1,3 +1,5 @@
+from models.enums import SensorStatus
+
 from models.item import Item
 
 
@@ -12,7 +14,11 @@ class Sensor:
         self.position = position
         self.is_active = is_active
         self.detection_count = 0
-        self.status = "ACTIVE" if is_active else "INACTIVE"
+        self.status = (
+            SensorStatus.ACTIVE
+            if is_active
+            else SensorStatus.INACTIVE
+        )
 
     def detect_item(self, item: Item):
         if not self.is_active:
@@ -35,6 +41,6 @@ class Sensor:
         return self.status
 
     def report_error(self):
-        self.status = "ERROR"
+        self.status = SensorStatus.ERROR
         self.is_active = False
         return "Sensor error"
