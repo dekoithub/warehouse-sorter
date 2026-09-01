@@ -9,14 +9,14 @@ class Sorter:
         sorter_id: int,
         supported_directions: list[int],
         is_available: bool,
-    ):
+    ) -> None:
         self.sorter_id = sorter_id
         self.status = SorterStatus.IDLE
-        self.current_direction = None
+        self.current_direction: int | None = None
         self.supported_directions = supported_directions
         self.is_available = is_available
 
-    def accept_item(self, item: Item):
+    def accept_item(self, item: Item | None) -> bool:
         if not self.is_available:
             return False
 
@@ -25,28 +25,32 @@ class Sorter:
 
         return True
 
-    def sort_item(self, item: Item, direction: int):
+    def sort_item(
+        self,
+        item: Item | None,
+        direction: int,
+    ) -> Item | None:
         if not self.is_available:
-            return False
+            return None
 
         if item is None:
-            return False
+            return None
 
         if not self.change_direction(direction):
-            return False
+            return None
 
         return item
 
-    def send_item(self, item: Item):
+    def send_item(self, item: Item | None) -> Item | None:
         if not self.is_available:
-            return False
+            return None
 
         if item is None:
-            return False
+            return None
 
         return item
 
-    def change_direction(self, direction: int):
+    def change_direction(self, direction: int) -> bool:
         if not self.is_available:
             return False
 
@@ -56,10 +60,10 @@ class Sorter:
         self.current_direction = direction
         return True
 
-    def report_status(self):
+    def report_status(self) -> SorterStatus:
         return self.status
 
-    def report_error(self):
+    def report_error(self) -> str:
         self.status = SorterStatus.ERROR
         self.is_available = False
         return "Sorter error"

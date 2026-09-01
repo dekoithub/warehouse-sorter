@@ -9,7 +9,7 @@ class OutputBin:
         self,
         bin_id: int,
         capacity: int,
-    ):
+    ) -> None:
         self.bin_id = bin_id
         self.capacity = capacity
         self.items: list[Item] = []
@@ -17,7 +17,7 @@ class OutputBin:
         self.status = OutputBinStatus.EMPTY
         self.is_full = False
 
-    def add_item(self, item: Item):
+    def add_item(self, item: Item) -> bool:
         if not self.is_available():
             return False
         
@@ -32,17 +32,17 @@ class OutputBin:
 
         return True
 
-    def remove_all_items(self):
+    def remove_all_items(self) -> None:
         self.items.clear()
         self.current_load = 0
         self.is_full = False
         self.status = OutputBinStatus.EMPTY
 
-    def is_available(self):
+    def is_available(self) -> bool:
         return self.current_load < self.capacity
 
-    def report_status(self):
+    def report_status(self) -> OutputBinStatus:
         return self.status
 
-    def report_full(self):
+    def report_full(self) -> bool:
         return self.is_full

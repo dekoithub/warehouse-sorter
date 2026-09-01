@@ -12,26 +12,24 @@ from models.sorter import Sorter
 
 class Controller:
     def __init__(
-            self,
-            scanner: Scanner,
-            wms: WMS,
-    ):
+        self,
+        scanner: Scanner,
+        wms: WMS,
+    ) -> None:
         self.scanner = scanner
         self.wms = wms
-
         self.conveyors: list[Conveyor] = []
         self.buffers: list[Buffer] = []
         self.output_bins: list[OutputBin] = []
-
         self.statistics: Statistics | None = None
 
-    def register_item(self, item: Item):
+    def register_item(self, item: Item) -> Item:
         if self.statistics is not None:
             self.statistics.register_processed_item()
 
         return item
 
-    def request_route(self, barcode: str):
+    def request_route(self, barcode: str) -> int | None:
         destination = self.wms.get_destination(barcode)
 
         if destination is None:
@@ -42,7 +40,7 @@ class Controller:
 
         return destination
 
-    def route_item(self, item: Item):
+    def route_item(self, item: Item) -> int | None:
         destination = self.request_route(item.barcode)
 
         if destination is None:
@@ -70,16 +68,14 @@ class Controller:
         self.send_to_manual_processing(item)
         return None
 
-    def handle_scan_error(self, item: Item):
+    def handle_scan_error(self, item: Item) -> None:
         if self.statistics is not None:
             self.statistics.register_scan_error()
 
         item.change_status(ItemStatus.ERROR)
         self.send_to_manual_processing(item)
 
-        return None
-
-    def send_to_buffer(self, item: Item):
+    def send_to_buffer(self, item: Item) -> bool:
         for buffer in self.buffers:
             if buffer.add_item(item):
                 item.change_status(ItemStatus.BUFFERED)
@@ -92,7 +88,7 @@ class Controller:
 
         return False
 
-    def send_to_manual_processing(self, item: Item):
+    def send_to_manual_processing(self, item: Item) -> bool:
         if item.status == ItemStatus.MANUAL_PROCESSING:
             return True
 
@@ -104,7 +100,7 @@ class Controller:
 
         return True
 
-    def update_statistics(self):
+    def update_statistics(self) -> dict[str, object] | None:
         if self.statistics is None:
             return None
 
@@ -116,7 +112,11 @@ class Controller:
 
         return self.statistics.generate_report()
 
-    def process_sensor_event(self, sensor_event: dict, item: Item):
+    def process_sensor_event(
+        self,
+        sensor_event: dict[str, int | str] | None,
+        item: Item,
+    ) -> int | None:
         if sensor_event is None:
             return None
 
@@ -124,14 +124,16 @@ class Controller:
             return None
 
         if not self.scanner.detect_item():
-            return self.handle_scan_error(item)
+            self.handle_scan_error(item)
+            return None
 
         item.change_status(ItemStatus.SCANNING)
 
         barcode = self.scanner.scan(item)
 
         if barcode is None:
-            return self.handle_scan_error(item)
+            self.handle_scan_error(item)
+            return None
 
         barcode = self.scanner.send_result(barcode)
 
@@ -141,10 +143,10 @@ class Controller:
 
     def process_sorter_event(
         self,
-        sensor_event: dict,
+        sensor_event: dict[str, int | str] | None,
         item: Item,
         sorter: Sorter,
-    ):
+    ) -> Item | None:
         if sensor_event is None:
             return None
 
@@ -203,7 +205,10 @@ class Controller:
 
         return None
     
-    def release_from_buffer(self, buffer: Buffer):
+    def release_from_buffer(
+        self,
+        buffer: Buffer,
+    ) -> Item | None:
         item = buffer.release_item()
 
         if item is None:

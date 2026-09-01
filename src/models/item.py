@@ -2,7 +2,21 @@ from models.enums import ItemStatus
 
 
 class Item:
-    def __init__(self, id, barcode, weight, width, height, length, category, delivery_type, is_flammable, status: ItemStatus, destination, location):
+    def __init__(
+        self,
+        id: int,
+        barcode: str,
+        weight: float,
+        width: int,
+        height: int,
+        length: int,
+        category: str,
+        delivery_type: str,
+        is_flammable: bool,
+        status: ItemStatus,
+        destination: int | None,
+        location: str,
+    ) -> None:
         self.id = id
         self.barcode = barcode
         self.weight = weight
@@ -16,7 +30,7 @@ class Item:
         self.destination = destination
         self.location = location
 
-    def get_info(self):
+    def get_info(self) -> dict[str, object]:
         return {
             "id": self.id,
             "barcode": self.barcode,
@@ -32,11 +46,11 @@ class Item:
             "location": self.location,
         }
 
-    def change_status(self, new_status: ItemStatus):
+    def change_status(self, new_status: ItemStatus) -> None:
         self.status = new_status
 
-    def set_destination(self, destination):
+    def set_destination(self, destination: int | None) -> None:
         self.destination = destination
 
-    def update_location(self, location):
+    def update_location(self, location: str) -> None:
         self.location = location

@@ -14,11 +14,11 @@ from models.statistics import Statistics
 
 
 def process_conveyor_to_sorter(
-        item: Item,
-        controller: Controller,
-        sorter_sensor: Sensor,
-        sorter: Sorter,
-):
+    item: Item,
+    controller: Controller,
+    sorter_sensor: Sensor,
+    sorter: Sorter,
+) -> Item:
     item_conveyor = None
 
     for conveyor in controller.conveyors:
@@ -62,7 +62,7 @@ def process_item(
     sensor: Sensor,
     sorter_sensor: Sensor,
     sorter: Sorter,
-):
+) -> Item:
     controller.register_item(item)
 
     detected = sensor.detect_item(item)
@@ -89,7 +89,7 @@ def process_item(
     )
 
 
-def main():
+def main() -> None:
     item = Item(
         id=1,
         barcode="4601234567890",
@@ -494,6 +494,9 @@ def main():
         print("Location:", current_item.location)
 
     report = controller.update_statistics()
+
+    if report is None:
+        raise RuntimeError("Statistics report is unavailable")
 
     print()
     print("=== System report ===")

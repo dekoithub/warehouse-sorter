@@ -5,10 +5,10 @@ from models.item import Item
 
 class Sensor:
     def __init__(
-            self,
-            sensor_id: int,
-            position: str,
-            is_active: bool,
+        self,
+        sensor_id: int,
+        position: str,
+        is_active: bool,
     ):
         self.sensor_id = sensor_id
         self.position = position
@@ -20,14 +20,17 @@ class Sensor:
             else SensorStatus.INACTIVE
         )
 
-    def detect_item(self, item: Item):
+    def detect_item(self, item: Item) -> bool:
         if not self.is_active:
             return False
 
         self.detection_count += 1
         return True
 
-    def send_signal(self, item: Item):
+    def send_signal(
+        self, 
+        item: Item
+    )-> dict[str, int | str] | None:
         if not self.is_active:
             return None
 
@@ -37,10 +40,10 @@ class Sensor:
             "position": self.position,
         }
 
-    def report_status(self):
+    def report_status(self) -> SensorStatus:
         return self.status
 
-    def report_error(self):
+    def report_error(self) -> str:
         self.status = SensorStatus.ERROR
         self.is_active = False
         return "Sensor error"

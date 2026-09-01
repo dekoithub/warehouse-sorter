@@ -8,14 +8,14 @@ class Buffer:
         self,
         buffer_id: int,
         capacity: int,
-    ):
+    ) -> None:
         self.buffer_id = buffer_id
         self.capacity = capacity
         self.items: list[Item] = []
         self.status = BufferStatus.EMPTY
         self.is_full = False
 
-    def add_item(self, item: Item):
+    def add_item(self, item: Item) -> bool:
         if not self.is_available():
             return False
 
@@ -29,7 +29,7 @@ class Buffer:
 
         return True
 
-    def release_item(self):
+    def release_item(self) -> Item | None:
         if not self.items:
             return None
 
@@ -43,15 +43,15 @@ class Buffer:
 
         return item
 
-    def is_available(self):
+    def is_available(self) -> bool:
         if self.status == BufferStatus.ERROR:
             return False
 
         return len(self.items) < self.capacity
 
-    def report_status(self):
+    def report_status(self) -> BufferStatus:
         return self.status
 
-    def report_error(self):
+    def report_error(self) -> str:
         self.status = BufferStatus.ERROR
         return "Buffer error"

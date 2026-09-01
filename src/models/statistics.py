@@ -1,34 +1,34 @@
 class Statistics:
-    def __init__(self):
-        self.processed_items = 0
-        self.sorted_items = 0
-        self.manual_processing_items = 0
-        self.scan_errors = 0
-        self.routing_errors = 0
-        self.buffer_usage = 0
-        self.conveyor_load = {}
-        self.output_bin_load = {}
-        self.simulation_time = 0.0
+    def __init__(self) -> None:
+        self.processed_items: int = 0
+        self.sorted_items: int = 0
+        self.manual_processing_items: int = 0
+        self.scan_errors: int = 0
+        self.routing_errors: int = 0
+        self.buffer_usage: int = 0
+        self.conveyor_load: dict[int, int] = {}
+        self.output_bin_load: dict[int, int] = {}
+        self.simulation_time: float = 0.0
 
-    def register_processed_item(self):
+    def register_processed_item(self) -> None:
         self.processed_items += 1
 
-    def register_sorted_item(self):
+    def register_sorted_item(self) -> None:
         self.sorted_items += 1
 
-    def register_manual_processing_item(self):
+    def register_manual_processing_item(self) -> None:
         self.manual_processing_items += 1
 
-    def register_scan_error(self):
+    def register_scan_error(self) -> None:
         self.scan_errors += 1
 
-    def register_routing_error(self):
+    def register_routing_error(self) -> None:
         self.routing_errors += 1
 
-    def register_buffer_usage(self):
+    def register_buffer_usage(self) -> None:
         self.buffer_usage += 1
 
-    def generate_report(self):
+    def generate_report(self) -> dict[str, object]:
         average_conveyor_load = (
             sum(self.conveyor_load.values()) / len(self.conveyor_load)
             if self.conveyor_load
@@ -69,7 +69,7 @@ class Statistics:
             "success_rate": success_rate,
         }
 
-    def reset(self):
+    def reset(self) -> None:
         self.processed_items = 0
         self.sorted_items = 0
         self.manual_processing_items = 0
