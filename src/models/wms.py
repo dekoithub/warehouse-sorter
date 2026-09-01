@@ -1,5 +1,8 @@
 from models.enums import WMSStatus
-
+from models.exceptions import (
+    EquipmentUnavailableError,
+    RouteNotFoundError,
+)
 
 class WMS:
     def __init__(
@@ -41,13 +44,20 @@ class WMS:
     
         self.routes[barcode] = destination
 
-    def get_destination(self, barcode: str) -> int | None:
+    def get_destination(self, barcode: str) -> int:
         self.request_count += 1
 
         if not self.is_available:
-            return None
-        
-        return self.routes.get(barcode)
+            raise EquipmentUnavailableError("WMS is unavailable")
+
+        destination = self.routes.get(barcode)
+
+        if destination is None:
+            raise RouteNotFoundError(
+                f"Route not found for barcode {barcode}"
+            )
+
+        return destination
 
     def remove_route(self, barcode: str) -> None:
         self.routes.pop(barcode, None)
