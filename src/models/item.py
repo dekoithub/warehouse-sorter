@@ -17,6 +17,37 @@ class Item:
         destination: int | None,
         location: str,
     ) -> None:
+
+        if id <= 0:
+            raise ValueError("Item id must be greater than 0")
+
+        if not barcode:
+            raise ValueError("Barcode cannot be empty")
+
+        if weight <= 0:
+            raise ValueError("Weight must be greater than 0")
+
+        if width <= 0:
+            raise ValueError("Width must be greater than 0")
+
+        if height <= 0:
+            raise ValueError("Height must be greater than 0")
+
+        if length <= 0:
+            raise ValueError("Length must be greater than 0")
+
+        if not category:
+            raise ValueError("Category cannot be empty")
+
+        if not delivery_type:
+            raise ValueError("Delivery type cannot be empty")
+
+        if destination is not None and destination <= 0:
+            raise ValueError("Destination must be greater than 0")
+
+        if not location:
+            raise ValueError("Location cannot be empty")
+        
         self.id = id
         self.barcode = barcode
         self.weight = weight

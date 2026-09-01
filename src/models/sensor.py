@@ -10,6 +10,13 @@ class Sensor:
         position: str,
         is_active: bool,
     ):
+
+        if sensor_id <= 0:
+            raise ValueError("Sensor id must be greater than 0")
+
+        if not position:
+            raise ValueError("Sensor position cannot be empty")
+
         self.sensor_id = sensor_id
         self.position = position
         self.is_active = is_active

@@ -1,4 +1,7 @@
+import pytest
+
 from models.enums import ItemStatus
+from models.item import Item
 
 
 def test_item_initial_data(item):
@@ -10,6 +13,7 @@ def test_item_initial_data(item):
     assert isinstance(item.status, ItemStatus)
     assert item.destination is None
     assert item.location == "Scanner"
+
 
 def test_item_state_changes(item):
     # Change the Item state through its public methods
@@ -23,3 +27,32 @@ def test_item_state_changes(item):
     assert item.status == ItemStatus.MOVING
     assert item.destination == 5
     assert item.location == "Conveyor 1"
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("id", 0),
+        ("weight", 0),
+        ("width", 0),
+        ("height", 0),
+        ("length", 0),
+        ("destination", 0),
+        ("barcode", ""),
+        ("category", ""),
+        ("delivery_type", ""),
+        ("location", ""),
+    ],
+)
+
+
+def test_item_rejects_invalid_data(
+    valid_item_data,
+    field,
+    invalid_value,
+):
+    data = valid_item_data.copy()
+    data[field] = invalid_value
+
+    with pytest.raises(ValueError):
+        Item(**data)

@@ -10,6 +10,13 @@ class OutputBin:
         bin_id: int,
         capacity: int,
     ) -> None:
+
+        if bin_id <= 0:
+            raise ValueError("Output bin id must be greater than 0")
+
+        if capacity <= 0:
+            raise ValueError("Output bin capacity must be greater than 0")
+    
         self.bin_id = bin_id
         self.capacity = capacity
         self.items: list[Item] = []

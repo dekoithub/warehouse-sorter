@@ -9,6 +9,14 @@ class Scanner:
         is_active: bool,
         error_rate: float,
     ) -> None:
+        
+        if scanner_id <= 0:
+            raise ValueError("Scanner id must be greater than 0")
+
+        if not 0 <= error_rate <= 1:
+            raise ValueError("Error rate must be between 0 and 1")
+
+        
         self.scanner_id = scanner_id
         self.is_active = is_active
         self.error_rate = error_rate

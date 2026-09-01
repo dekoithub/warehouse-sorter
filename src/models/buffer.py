@@ -9,6 +9,13 @@ class Buffer:
         buffer_id: int,
         capacity: int,
     ) -> None:
+
+        if buffer_id <= 0:
+            raise ValueError("Buffer id must be greater than 0")
+
+        if capacity <= 0:
+            raise ValueError("Buffer capacity must be greater than 0")
+
         self.buffer_id = buffer_id
         self.capacity = capacity
         self.items: list[Item] = []

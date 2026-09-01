@@ -11,6 +11,16 @@ class Conveyor:
         capacity: int,
         is_available: bool,
     ) -> None:
+
+        if conveyor_id <= 0:
+            raise ValueError("Conveyor id must be greater than 0")
+
+        if speed <= 0:
+            raise ValueError("Conveyor speed must be greater than 0")
+
+        if capacity <= 0:
+            raise ValueError("Conveyor capacity must be greater than 0")
+
         self.conveyor_id = conveyor_id
         self.speed = speed
         self.capacity = capacity
@@ -44,6 +54,9 @@ class Conveyor:
         return self.items.pop(0)
 
     def change_speed(self, new_speed: float) -> None:
+        if new_speed <= 0:
+            raise ValueError("Conveyor speed must be greater than 0")
+        
         self.speed = new_speed
 
     def stop(self) -> bool:

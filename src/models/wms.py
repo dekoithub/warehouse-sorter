@@ -8,6 +8,20 @@ class WMS:
         available_destinations: list[int],
         is_available: bool,
     ) -> None:
+
+        if not available_destinations:
+            raise ValueError("Available destinations cannot be empty")
+
+        if any(destination <= 0 for destination in available_destinations):
+                    raise ValueError("Destinations must be greater than 0")
+
+        for barcode, destination in routes.items():
+            if not barcode:
+                raise ValueError("Barcode cannot be empty")
+
+            if destination not in available_destinations:
+                raise ValueError("Route destination is not available")
+        
         self.routes = routes
         self.available_destinations = available_destinations
         self.request_count = 0
@@ -19,6 +33,12 @@ class WMS:
         self.is_available = is_available
 
     def register_route(self, barcode: str, destination: int) -> None:
+        if not barcode:
+            raise ValueError("Barcode cannot be empty")
+
+        if destination not in self.available_destinations:
+            raise ValueError("Destination is not available")
+    
         self.routes[barcode] = destination
 
     def get_destination(self, barcode: str) -> int | None:

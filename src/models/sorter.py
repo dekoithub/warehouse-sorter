@@ -10,6 +10,19 @@ class Sorter:
         supported_directions: list[int],
         is_available: bool,
     ) -> None:
+
+        if sorter_id <= 0:
+            raise ValueError("Sorter id must be greater than 0")
+
+        if not supported_directions:
+            raise ValueError("Supported directions cannot be empty")
+
+        if any(direction <= 0 for direction in supported_directions):
+            raise ValueError("Supported directions must be greater than 0")
+
+        if len(supported_directions) != len(set(supported_directions)):
+            raise ValueError("Supported directions must be unique")
+    
         self.sorter_id = sorter_id
         self.status = SorterStatus.IDLE
         self.current_direction: int | None = None

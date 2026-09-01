@@ -1,3 +1,5 @@
+import pytest
+
 from models.wms import WMS
 
 
@@ -44,3 +46,46 @@ def test_wms_returns_none_when_unavailable():
 
     assert destination is None
     assert wms.request_count == 1
+
+def test_wms_rejects_invalid_initial_route():
+    with pytest.raises(ValueError):
+        WMS(
+            routes={"4601234567890": 99},
+            available_destinations=[1, 2, 3, 4, 5],
+            is_available=True,
+        )
+
+
+@pytest.mark.parametrize(
+    "available_destinations",
+    [
+        [],
+        [0],
+        [-1, 2, 3],
+    ],
+)
+def test_wms_rejects_invalid_destinations(available_destinations):
+    with pytest.raises(ValueError):
+        WMS(
+            routes={},
+            available_destinations=available_destinations,
+            is_available=True,
+        )
+
+
+@pytest.mark.parametrize(
+    ("barcode", "destination"),
+    [
+        ("", 1),
+        ("4601234567890", 99),
+    ],
+)
+def test_wms_rejects_invalid_route(barcode, destination):
+    wms = WMS(
+        routes={},
+        available_destinations=[1, 2, 3, 4, 5],
+        is_available=True,
+    )
+
+    with pytest.raises(ValueError):
+        wms.register_route(barcode, destination)
