@@ -1,4 +1,5 @@
 import pytest
+from models.exceptions import UnsupportedDirectionError
 
 from models.sorter import Sorter
 
@@ -24,3 +25,13 @@ def test_sorter_rejects_invalid_data(
             supported_directions=supported_directions,
             is_available=True,
         )
+
+def test_sorter_raises_error_for_unsupported_direction():
+    sorter = Sorter(
+        sorter_id=1,
+        supported_directions=[1, 2, 3, 4, 5],
+        is_available=True,
+    )
+
+    with pytest.raises(UnsupportedDirectionError):
+        sorter.change_direction(99)

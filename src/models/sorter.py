@@ -1,4 +1,5 @@
 from models.enums import SorterStatus
+from models.exceptions import UnsupportedDirectionError
 
 from models.item import Item
 
@@ -68,7 +69,9 @@ class Sorter:
             return False
 
         if direction not in self.supported_directions:
-            return False
+            raise UnsupportedDirectionError(
+                f"Direction {direction} is not supported"
+            )
 
         self.current_direction = direction
         return True

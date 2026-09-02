@@ -1,4 +1,5 @@
 from models.enums import BufferStatus
+from models.exceptions import BufferFullError
 
 from models.item import Item
 
@@ -23,6 +24,11 @@ class Buffer:
         self.is_full = False
 
     def add_item(self, item: Item) -> bool:
+        if len(self.items) >= self.capacity:
+            raise BufferFullError(
+                f"Buffer {self.buffer_id} is full"
+            )
+
         if not self.is_available():
             return False
 

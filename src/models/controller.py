@@ -1,7 +1,9 @@
 from models.enums import ItemStatus
 from models.exceptions import (
+    BufferFullError,
     EquipmentUnavailableError,
     RouteNotFoundError,
+    UnsupportedDirectionError,
 )
 
 from models.item import Item
@@ -75,7 +77,13 @@ class Controller:
 
     def send_to_buffer(self, item: Item) -> bool:
         for buffer in self.buffers:
-            if buffer.add_item(item):
+            try:
+                added = buffer.add_item(item)
+
+            except BufferFullError:
+                continue
+
+            if added:
                 item.change_status(ItemStatus.BUFFERED)
                 item.update_location(f"Buffer {buffer.buffer_id}")
 
@@ -162,18 +170,26 @@ class Controller:
             self.send_to_manual_processing(item)
             return None
 
-        sorted_item = sorter.sort_item(
-            item,
-            item.destination,
-        )
+        try:
+            sorted_item = sorter.sort_item(
+                item,
+                item.destination,
+            )
 
-        if not sorted_item:
+        except UnsupportedDirectionError:
+            if self.statistics is not None:
+                self.statistics.register_routing_error()
+
+            self.send_to_manual_processing(item)
+            return None
+
+        if sorted_item is None:
             self.send_to_manual_processing(item)
             return None
 
         sent_item = sorter.send_item(sorted_item)
 
-        if not sent_item:
+        if sent_item is None:
             self.send_to_manual_processing(item)
             return None
 
@@ -183,7 +199,9 @@ class Controller:
 
             if output_bin.add_item(sent_item):
                 sent_item.change_status(ItemStatus.SORTED)
-                sent_item.update_location(f"OutputBin {output_bin.bin_id}")
+                sent_item.update_location(
+                    f"OutputBin {output_bin.bin_id}"
+                )
 
                 if self.statistics is not None:
                     self.statistics.register_sorted_item()
