@@ -42,15 +42,17 @@ def process_conveyor_to_sorter(
 
     released_item.update_location("Sorter Sensor")
 
-    sorter_detected = sorter_sensor.detect_item(released_item)
+    sorter_event = sorter_sensor.detect_item(released_item)
 
-    if not sorter_detected:
+    if sorter_event is None:
         controller.send_to_manual_processing(released_item)
         return released_item
 
-    sorter_event = sorter_sensor.send_signal(released_item)
-
-    controller.process_sorter_event(sorter_event, released_item, sorter)
+    controller.process_sorter_event(
+        sorter_event,
+        released_item,
+        sorter,
+    )
 
     controller.update_statistics()
 
@@ -66,13 +68,11 @@ def process_item(
 ) -> Item:
     controller.register_item(item)
 
-    detected = sensor.detect_item(item)
+    sensor_event = sensor.detect_item(item)
 
-    if not detected:
+    if sensor_event is None:
         controller.send_to_manual_processing(item)
         return item
-
-    sensor_event = sensor.send_signal(item)
 
     controller.process_sensor_event(
         sensor_event,

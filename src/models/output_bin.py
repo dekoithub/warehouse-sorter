@@ -16,11 +16,11 @@ class OutputBin:
 
         self.bin_id = bin_id
         self.capacity = capacity
-        self.items: list[Item] = []
+        self._items: list[Item] = []
 
     @property
     def current_load(self) -> int:
-        return len(self.items)
+        return len(self._items)
 
     @property
     def is_full(self) -> bool:
@@ -28,7 +28,7 @@ class OutputBin:
 
     @property
     def status(self) -> OutputBinStatus:
-        if not self.items:
+        if not self._items:
             return OutputBinStatus.EMPTY
 
         if self.is_full:
@@ -40,11 +40,11 @@ class OutputBin:
         if not self.is_available():
             return False
 
-        self.items.append(item)
+        self._items.append(item)
         return True
 
     def remove_all_items(self) -> None:
-        self.items.clear()
+        self._items.clear()
 
     def is_available(self) -> bool:
         return not self.is_full

@@ -47,10 +47,6 @@ class Scanner:
             self.scanner_id,
         )
 
-
-    def detect_item(self) -> bool:
-        return self.is_active
-
     def scan(self, item: Item) -> str | None:
         if not self.is_active:
             return None

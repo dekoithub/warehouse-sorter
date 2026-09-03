@@ -28,7 +28,7 @@ class Conveyor:
         self.conveyor_id = conveyor_id
         self.speed = speed
         self.capacity = capacity
-        self.items: list[Item] = []
+        self._items: list[Item] = []
         self.status = (
             ConveyorStatus.STOPPED
             if is_available
@@ -39,6 +39,9 @@ class Conveyor:
     def is_available(self) -> bool:
         return self.status != ConveyorStatus.UNAVAILABLE
 
+    @property
+    def items(self) -> tuple[Item, ...]:
+        return tuple(self._items)
 
     def enable(self) -> None:
         self.status = ConveyorStatus.STOPPED
@@ -62,17 +65,17 @@ class Conveyor:
                 f"Conveyor {self.conveyor_id} is unavailable"
             )
 
-        if len(self.items) >= self.capacity:
+        if len(self._items) >= self.capacity:
             return False
 
-        self.items.append(item)
+        self._items.append(item)
         return True
 
     def release_item(self) -> Item | None:
-        if not self.items:
+        if not self._items:
             return None
 
-        return self.items.pop(0)
+        return self._items.pop(0)
 
     def change_speed(self, new_speed: float) -> None:
         if new_speed <= 0:

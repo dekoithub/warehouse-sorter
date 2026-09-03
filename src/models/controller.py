@@ -187,10 +187,6 @@ class Controller:
             )
             return None
 
-        if not self.scanner.detect_item():
-            self.handle_scan_error(item)
-            return None
-
         item.change_status(ItemStatus.SCANNING)
 
         barcode = self.scanner.scan(item)

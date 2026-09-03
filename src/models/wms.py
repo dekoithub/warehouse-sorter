@@ -31,8 +31,8 @@ class WMS:
             if destination not in available_destinations:
                 raise ValueError("Route destination is not available")
         
-        self.routes = routes
-        self.available_destinations = available_destinations
+        self._routes = dict(routes)
+        self._available_destinations = list(available_destinations)
         self.request_count = 0
         self.status = (
             WMSStatus.AVAILABLE
@@ -44,10 +44,10 @@ class WMS:
         if not barcode:
             raise ValueError("Barcode cannot be empty")
 
-        if destination not in self.available_destinations:
+        if destination not in self._available_destinations:
             raise ValueError("Destination is not available")
     
-        self.routes[barcode] = destination
+        self._routes[barcode] = destination
 
         logger.debug(
             "Route registered: barcode=%s, destination=%s",
@@ -76,7 +76,7 @@ class WMS:
         if not self.is_available:
             raise EquipmentUnavailableError("WMS is unavailable")
 
-        destination = self.routes.get(barcode)
+        destination = self._routes.get(barcode)
 
         if destination is None:
             raise RouteNotFoundError(
@@ -84,16 +84,3 @@ class WMS:
             )
 
         return destination
-
-    def remove_route(self, barcode: str) -> None:
-        destination = self.routes.pop(barcode, None)
-
-        if destination is not None:
-            logger.debug(
-                "Route removed: barcode=%s, destination=%s",
-                barcode,
-                destination,
-            )
-
-    def is_destination_available(self, destination: int) -> bool:
-        return destination in self.available_destinations

@@ -22,19 +22,23 @@ class Buffer:
 
         self.buffer_id = buffer_id
         self.capacity = capacity
-        self.items: list[Item] = []
+        self._items: list[Item] = []
         self._has_error = False
 
     @property
+    def items(self) -> tuple[Item, ...]:
+        return tuple(self._items)
+
+    @property
     def is_full(self) -> bool:
-        return len(self.items) >= self.capacity
+        return len(self._items) >= self.capacity
 
     @property
     def status(self) -> BufferStatus:
         if self._has_error:
             return BufferStatus.ERROR
 
-        if not self.items:
+        if not self._items:
             return BufferStatus.EMPTY
 
         if self.is_full:
@@ -51,14 +55,14 @@ class Buffer:
         if not self.is_available():
             return False
 
-        self.items.append(item)
+        self._items.append(item)
         return True
 
     def release_item(self) -> Item | None:
-        if not self.items:
+        if not self._items:
             return None
 
-        return self.items.pop(0)
+        return self._items.pop(0)
 
     def is_available(self) -> bool:
         return not self._has_error and not self.is_full

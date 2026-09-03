@@ -13,7 +13,7 @@ class Sensor:
         sensor_id: int,
         position: str,
         is_active: bool,
-    ):
+    ) -> None:
 
         if sensor_id <= 0:
             raise ValueError("Sensor id must be greater than 0")
@@ -38,11 +38,23 @@ class Sensor:
     def activate(self) -> None:
         self.status = SensorStatus.ACTIVE
 
+        logger.info(
+            "Sensor %s activated",
+            self.sensor_id,
+        )
 
     def deactivate(self) -> None:
         self.status = SensorStatus.INACTIVE
 
-    def detect_item(self, item: Item) -> bool:
+        logger.info(
+            "Sensor %s deactivated",
+            self.sensor_id,
+        )
+
+    def detect_item(
+        self,
+        item: Item,
+    ) -> dict[str, int | str] | None:
         if not self.is_active:
             logger.warning(
                 "Sensor %s cannot detect item %s: status=%s",
@@ -50,17 +62,9 @@ class Sensor:
                 item.id,
                 self.status,
             )
-            return False
+            return None
 
         self.detection_count += 1
-        return True
-
-    def send_signal(
-        self, 
-        item: Item
-    )-> dict[str, int | str] | None:
-        if not self.is_active:
-            return None
 
         return {
             "sensor_id": self.sensor_id,
