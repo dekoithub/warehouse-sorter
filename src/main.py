@@ -1,6 +1,6 @@
 import time
-from models.enums import ItemStatus, SensorStatus, WMSStatus
 
+from models.enums import ItemStatus, SensorStatus, WMSStatus
 from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS

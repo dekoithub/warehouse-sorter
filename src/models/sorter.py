@@ -1,5 +1,8 @@
 from models.enums import SorterStatus
-from models.exceptions import UnsupportedDirectionError
+from models.exceptions import (
+    EquipmentUnavailableError,
+    UnsupportedDirectionError,
+)
 
 from models.item import Item
 
@@ -32,8 +35,10 @@ class Sorter:
 
     def accept_item(self, item: Item | None) -> bool:
         if not self.is_available:
-            return False
-
+            raise EquipmentUnavailableError(
+                f"Sorter {self.sorter_id} is unavailable"
+            )
+        
         if item is None:
             return False
 
@@ -45,7 +50,9 @@ class Sorter:
         direction: int,
     ) -> Item | None:
         if not self.is_available:
-            return None
+            raise EquipmentUnavailableError(
+                f"Sorter {self.sorter_id} is unavailable"
+            )
 
         if item is None:
             return None
@@ -57,7 +64,9 @@ class Sorter:
 
     def send_item(self, item: Item | None) -> Item | None:
         if not self.is_available:
-            return None
+            raise EquipmentUnavailableError(
+                f"Sorter {self.sorter_id} is unavailable"
+            )
 
         if item is None:
             return None
@@ -66,7 +75,9 @@ class Sorter:
 
     def change_direction(self, direction: int) -> bool:
         if not self.is_available:
-            return False
+            raise EquipmentUnavailableError(
+                f"Sorter {self.sorter_id} is unavailable"
+            )
 
         if direction not in self.supported_directions:
             raise UnsupportedDirectionError(

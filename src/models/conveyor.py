@@ -1,4 +1,5 @@
 from models.enums import ConveyorStatus
+from models.exceptions import EquipmentUnavailableError
 
 from models.item import Item
 
@@ -11,7 +12,6 @@ class Conveyor:
         capacity: int,
         is_available: bool,
     ) -> None:
-
         if conveyor_id <= 0:
             raise ValueError("Conveyor id must be greater than 0")
 
@@ -30,8 +30,10 @@ class Conveyor:
 
     def accept_item(self, item: Item) -> bool:
         if not self.is_available:
-            return False 
-        
+            raise EquipmentUnavailableError(
+                f"Conveyor {self.conveyor_id} is unavailable"
+            )
+
         if len(self.items) >= self.capacity:
             return False
 
@@ -40,7 +42,9 @@ class Conveyor:
 
     def move_items(self) -> list[Item] | bool:
         if not self.is_available:
-            return False
+            raise EquipmentUnavailableError(
+                f"Conveyor {self.conveyor_id} is unavailable"
+            )
 
         if self.status != ConveyorStatus.RUNNING:
             return False
@@ -56,7 +60,7 @@ class Conveyor:
     def change_speed(self, new_speed: float) -> None:
         if new_speed <= 0:
             raise ValueError("Conveyor speed must be greater than 0")
-        
+
         self.speed = new_speed
 
     def stop(self) -> bool:
@@ -65,12 +69,12 @@ class Conveyor:
 
     def start(self) -> bool:
         if not self.is_available:
-            return False
+            raise EquipmentUnavailableError(
+                f"Conveyor {self.conveyor_id} is unavailable"
+            )
 
         self.status = ConveyorStatus.RUNNING
         return True
 
     def report_status(self) -> ConveyorStatus:
         return self.status
-
-    

@@ -53,13 +53,21 @@ class Controller:
         item.set_destination(destination)
 
         for conveyor in self.conveyors:
-            if conveyor.accept_item(item):
+            try:
+                accepted = conveyor.accept_item(item)
+
+                if not accepted:
+                    continue
+
                 conveyor.start()
 
-                item.change_status(ItemStatus.MOVING)
-                item.update_location(f"Conveyor {conveyor.conveyor_id}")
+            except EquipmentUnavailableError:
+                continue
 
-                return destination
+            item.change_status(ItemStatus.MOVING)
+            item.update_location(f"Conveyor {conveyor.conveyor_id}")
+
+            return destination
 
         if self.send_to_buffer(item):
             return destination
@@ -163,7 +171,17 @@ class Controller:
             self.send_to_manual_processing(item)
             return None
 
-        if not sorter.accept_item(item):
+        try:
+            accepted = sorter.accept_item(item)
+
+        except EquipmentUnavailableError:
+            if self.send_to_buffer(item):
+                return None
+
+            self.send_to_manual_processing(item)
+            return None
+
+        if not accepted:
             if self.send_to_buffer(item):
                 return None
 
@@ -183,16 +201,31 @@ class Controller:
             self.send_to_manual_processing(item)
             return None
 
+        except EquipmentUnavailableError:
+            if self.send_to_buffer(item):
+                return None
+
+            self.send_to_manual_processing(item)
+            return None
+
         if sorted_item is None:
             self.send_to_manual_processing(item)
             return None
 
-        sent_item = sorter.send_item(sorted_item)
+        try:
+            sent_item = sorter.send_item(sorted_item)
+
+        except EquipmentUnavailableError:
+            if self.send_to_buffer(sorted_item):
+                return None
+
+            self.send_to_manual_processing(sorted_item)
+            return None
 
         if sent_item is None:
             self.send_to_manual_processing(item)
             return None
-
+        
         for output_bin in self.output_bins:
             if output_bin.bin_id != sent_item.destination:
                 continue
@@ -231,14 +264,22 @@ class Controller:
             return None
 
         for conveyor in self.conveyors:
-            if conveyor.accept_item(item):
+            try:
+                accepted = conveyor.accept_item(item)
+
+                if not accepted:
+                    continue
+
                 conveyor.start()
 
-                item.change_status(ItemStatus.MOVING)
-                item.update_location(f"Conveyor {conveyor.conveyor_id}")
+            except EquipmentUnavailableError:
+                continue
 
-                return item
+            item.change_status(ItemStatus.MOVING)
+            item.update_location(f"Conveyor {conveyor.conveyor_id}")
 
+            return item
+        
         if buffer.add_item(item):
             item.change_status(ItemStatus.BUFFERED)
             item.update_location(f"Buffer {buffer.buffer_id}")
