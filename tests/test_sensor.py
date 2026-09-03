@@ -53,7 +53,7 @@ def test_sensor_state_management():
 
     # Simulate a Sensor error
     # Имитируем ошибку Sensor
-    sensor.report_error()
+    sensor.mark_error()
 
     assert sensor.status == SensorStatus.ERROR
     assert sensor.is_active is False

@@ -68,9 +68,10 @@ class Sensor:
             "position": self.position,
         }
 
-    def report_status(self) -> SensorStatus:
-        return self.status
-
-    def report_error(self) -> str:
+    def mark_error(self) -> None:
         self.status = SensorStatus.ERROR
-        return "Sensor error"
+
+        logger.error(
+            "Sensor %s entered error state",
+            self.sensor_id,
+        )

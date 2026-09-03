@@ -61,47 +61,16 @@ class Sorter:
             self.sorter_id,
         )
 
-    def accept_item(self, item: Item | None) -> bool:
-        if not self.is_available:
-            raise EquipmentUnavailableError(
-                f"Sorter {self.sorter_id} is unavailable"
-            )
-        
-        if item is None:
-            return False
-
-        return True
-
     def sort_item(
         self,
-        item: Item | None,
+        item: Item,
         direction: int,
-    ) -> Item | None:
-        if not self.is_available:
-            raise EquipmentUnavailableError(
-                f"Sorter {self.sorter_id} is unavailable"
-            )
-
-        if item is None:
-            return None
-
-        if not self.change_direction(direction):
-            return None
+    ) -> Item:
+        self._change_direction(direction)
 
         return item
 
-    def send_item(self, item: Item | None) -> Item | None:
-        if not self.is_available:
-            raise EquipmentUnavailableError(
-                f"Sorter {self.sorter_id} is unavailable"
-            )
-
-        if item is None:
-            return None
-
-        return item
-
-    def change_direction(self, direction: int) -> bool:
+    def _change_direction(self, direction: int) -> None:
         if not self.is_available:
             raise EquipmentUnavailableError(
                 f"Sorter {self.sorter_id} is unavailable"
@@ -120,17 +89,10 @@ class Sorter:
             direction,
         )
 
-        return True
-
-    def report_status(self) -> SorterStatus:
-        return self.status
-
-    def report_error(self) -> str:
+    def mark_error(self) -> None:
         self.status = SorterStatus.ERROR
 
         logger.error(
             "Sorter %s entered error state",
             self.sorter_id,
         )
-
-        return "Sorter error"

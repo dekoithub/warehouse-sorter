@@ -48,9 +48,3 @@ class OutputBin:
 
     def is_available(self) -> bool:
         return not self.is_full
-
-    def report_status(self) -> OutputBinStatus:
-        return self.status
-
-    def report_full(self) -> bool:
-        return self.is_full

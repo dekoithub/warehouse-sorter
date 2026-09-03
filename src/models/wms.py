@@ -97,6 +97,3 @@ class WMS:
 
     def is_destination_available(self, destination: int) -> bool:
         return destination in self.available_destinations
-
-    def report_status(self) -> WMSStatus:
-        return self.status

@@ -71,7 +71,7 @@ def test_buffer_state_management(item):
 
     # Simulate a Buffer error
     # Имитируем ошибку Buffer
-    buffer.report_error()
+    buffer.mark_error()
 
     assert buffer.status == BufferStatus.ERROR
     assert buffer.is_available() is False

@@ -63,15 +63,10 @@ class Buffer:
     def is_available(self) -> bool:
         return not self._has_error and not self.is_full
 
-    def report_status(self) -> BufferStatus:
-        return self.status
-
-    def report_error(self) -> str:
+    def mark_error(self) -> None:
         self._has_error = True
 
         logger.error(
             "Buffer %s entered error state",
             self.buffer_id,
         )
-
-        return "Buffer error"

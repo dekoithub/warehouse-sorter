@@ -68,17 +68,6 @@ class Conveyor:
         self.items.append(item)
         return True
 
-    def move_items(self) -> list[Item] | bool:
-        if not self.is_available:
-            raise EquipmentUnavailableError(
-                f"Conveyor {self.conveyor_id} is unavailable"
-            )
-
-        if self.status != ConveyorStatus.RUNNING:
-            return False
-
-        return self.items
-
     def release_item(self) -> Item | None:
         if not self.items:
             return None
@@ -99,7 +88,7 @@ class Conveyor:
             new_speed,
         )
 
-    def stop(self) -> bool:
+    def stop(self) -> None:
         if not self.is_available:
             raise EquipmentUnavailableError(
                 f"Conveyor {self.conveyor_id} is unavailable"
@@ -112,9 +101,7 @@ class Conveyor:
             self.conveyor_id,
         )
 
-        return True
-
-    def start(self) -> bool:
+    def start(self) -> None:
         if not self.is_available:
             raise EquipmentUnavailableError(
                 f"Conveyor {self.conveyor_id} is unavailable"
@@ -126,8 +113,3 @@ class Conveyor:
             "Conveyor %s started",
             self.conveyor_id,
         )
-
-        return True
-
-    def report_status(self) -> ConveyorStatus:
-        return self.status

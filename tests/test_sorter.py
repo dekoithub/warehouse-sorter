@@ -30,7 +30,7 @@ def test_sorter_rejects_invalid_data(
             is_available=True,
         )
 
-def test_sorter_raises_error_for_unsupported_direction():
+def test_sorter_raises_error_for_unsupported_direction(item):
     sorter = Sorter(
         sorter_id=1,
         supported_directions=[1, 2, 3, 4, 5],
@@ -38,26 +38,21 @@ def test_sorter_raises_error_for_unsupported_direction():
     )
 
     with pytest.raises(UnsupportedDirectionError):
-        sorter.change_direction(99)
+        sorter.sort_item(item, 99)
 
 def test_sorter_raises_error_when_unavailable(item):
+    # Create an unavailable Sorter
+    # Создаем недоступный Sorter
     sorter = Sorter(
         sorter_id=1,
         supported_directions=[1, 2, 3, 4, 5],
         is_available=False,
     )
 
-    with pytest.raises(EquipmentUnavailableError):
-        sorter.accept_item(item)
-
+    # Sorting must fail when Sorter is unavailable
+    # Сортировка должна завершиться ошибкой, если Sorter недоступен
     with pytest.raises(EquipmentUnavailableError):
         sorter.sort_item(item, 5)
-
-    with pytest.raises(EquipmentUnavailableError):
-        sorter.send_item(item)
-
-    with pytest.raises(EquipmentUnavailableError):
-        sorter.change_direction(5)
 
 def test_sorter_state_management():
     # Create an available Sorter
@@ -89,7 +84,7 @@ def test_sorter_state_management():
 
     # Simulate a Sorter error
     # Имитируем ошибку Sorter
-    sorter.report_error()
+    sorter.mark_error()
 
     assert sorter.status == SorterStatus.ERROR
     assert sorter.is_available is False

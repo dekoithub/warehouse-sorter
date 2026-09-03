@@ -62,14 +62,4 @@ class Scanner:
         
         return item.barcode
 
-    def send_result(self, barcode: str | None) -> str | None:
-        return barcode
-
-    def report_error(self) -> str:
-        logger.error(
-            "Scanner %s reported an error",
-            self.scanner_id,
-        )
-        return "Scanner error"
-
     

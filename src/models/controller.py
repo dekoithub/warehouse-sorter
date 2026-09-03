@@ -199,12 +199,6 @@ class Controller:
             self.handle_scan_error(item)
             return None
 
-        barcode = self.scanner.send_result(barcode)
-
-        if barcode is None:
-            self.handle_scan_error(item)
-            return None
-
         logger.info(
             "Item %s scanned successfully: barcode %s",
             item.id,
@@ -246,31 +240,6 @@ class Controller:
             return None
 
         try:
-            accepted = sorter.accept_item(item)
-
-        except EquipmentUnavailableError as error:
-            logger.warning("%s", error)
-
-            if self.send_to_buffer(item):
-                return None
-
-            self.send_to_manual_processing(item)
-            return None
-
-        if not accepted:
-            logger.warning(
-                "Sorter %s did not accept item %s",
-                sorter.sorter_id,
-                item.id,
-            )
-
-            if self.send_to_buffer(item):
-                return None
-
-            self.send_to_manual_processing(item)
-            return None
-
-        try:
             sorted_item = sorter.sort_item(
                 item,
                 item.destination,
@@ -297,22 +266,33 @@ class Controller:
 
             self.send_to_manual_processing(item)
             return None
+        
+        for output_bin in self.output_bins:
+            if output_bin.bin_id != sorted_item.destination:
+                continue
 
-        if sorted_item is None:
+            if output_bin.add_item(sorted_item):
+                sorted_item.change_status(ItemStatus.SORTED)
+                sorted_item.update_location(
+                    f"OutputBin {output_bin.bin_id}"
+                )
+
+                logger.info(
+                    "Item %s sorted to OutputBin %s",
+                    sorted_item.id,
+                    output_bin.bin_id,
+                )
+
+                if self.statistics is not None:
+                    self.statistics.register_sorted_item()
+
+                return sorted_item
+
             logger.warning(
-                "Sorter %s failed to sort item %s",
-                sorter.sorter_id,
-                item.id,
+                "OutputBin %s cannot accept item %s",
+                output_bin.bin_id,
+                sorted_item.id,
             )
-
-            self.send_to_manual_processing(item)
-            return None
-
-        try:
-            sent_item = sorter.send_item(sorted_item)
-
-        except EquipmentUnavailableError as error:
-            logger.warning("%s", error)
 
             if self.send_to_buffer(sorted_item):
                 return None
@@ -320,59 +300,16 @@ class Controller:
             self.send_to_manual_processing(sorted_item)
             return None
 
-        if sent_item is None:
-            logger.warning(
-                "Sorter %s failed to send item %s",
-                sorter.sorter_id,
-                item.id,
-            )
-
-            self.send_to_manual_processing(item)
-            return None
-        
-        for output_bin in self.output_bins:
-            if output_bin.bin_id != sent_item.destination:
-                continue
-
-            if output_bin.add_item(sent_item):
-                sent_item.change_status(ItemStatus.SORTED)
-                sent_item.update_location(
-                    f"OutputBin {output_bin.bin_id}"
-                )
-
-                logger.info(
-                    "Item %s sorted to OutputBin %s",
-                    sent_item.id,
-                    output_bin.bin_id,
-                )
-
-                if self.statistics is not None:
-                    self.statistics.register_sorted_item()
-
-                return sent_item
-
-            logger.warning(
-                "OutputBin %s cannot accept item %s",
-                output_bin.bin_id,
-                sent_item.id,
-            )
-
-            if self.send_to_buffer(sent_item):
-                return None
-
-            self.send_to_manual_processing(sent_item)
-            return None
-
         logger.warning(
             "No OutputBin found for item %s with destination %s",
-            sent_item.id,
-            sent_item.destination,
+            sorted_item.id,
+            sorted_item.destination,
         )
 
         if self.statistics is not None:
             self.statistics.register_routing_error()
 
-        self.send_to_manual_processing(sent_item)
+        self.send_to_manual_processing(sorted_item)
 
         return None
     
