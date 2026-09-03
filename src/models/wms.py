@@ -33,7 +33,6 @@ class WMS:
             if is_available
             else WMSStatus.UNAVAILABLE
         )
-        self.is_available = is_available
 
     def register_route(self, barcode: str, destination: int) -> None:
         if not barcode:
@@ -43,6 +42,19 @@ class WMS:
             raise ValueError("Destination is not available")
     
         self.routes[barcode] = destination
+
+    @property
+    def is_available(self) -> bool:
+        return self.status == WMSStatus.AVAILABLE
+
+
+    def enable(self) -> None:
+        self.status = WMSStatus.AVAILABLE
+
+
+    def disable(self) -> None:
+        self.status = WMSStatus.UNAVAILABLE
+
 
     def get_destination(self, barcode: str) -> int:
         self.request_count += 1

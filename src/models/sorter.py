@@ -28,10 +28,25 @@ class Sorter:
             raise ValueError("Supported directions must be unique")
     
         self.sorter_id = sorter_id
-        self.status = SorterStatus.IDLE
+        self.status = (
+            SorterStatus.IDLE
+            if is_available
+            else SorterStatus.UNAVAILABLE
+        )
         self.current_direction: int | None = None
         self.supported_directions = supported_directions
-        self.is_available = is_available
+
+    @property
+    def is_available(self) -> bool:
+        return self.status == SorterStatus.IDLE
+
+
+    def enable(self) -> None:
+        self.status = SorterStatus.IDLE
+
+
+    def disable(self) -> None:
+        self.status = SorterStatus.UNAVAILABLE
 
     def accept_item(self, item: Item | None) -> bool:
         if not self.is_available:
@@ -92,5 +107,4 @@ class Sorter:
 
     def report_error(self) -> str:
         self.status = SorterStatus.ERROR
-        self.is_available = False
         return "Sorter error"

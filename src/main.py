@@ -1,6 +1,6 @@
 import time
 
-from models.enums import ItemStatus, SensorStatus, WMSStatus
+from models.enums import ItemStatus
 from models.item import Item
 from models.scanner import Scanner
 from models.wms import WMS
@@ -381,7 +381,7 @@ def main() -> None:
 
     items.append(fifth_item)
 
-    sorter.is_available = False
+    sorter.disable()
 
     process_item(
         sixth_item,
@@ -391,11 +391,11 @@ def main() -> None:
         sorter,
     )
 
-    sorter.is_available = True
+    sorter.enable()
 
     items.append(sixth_item)
 
-    sorter.is_available = False
+    sorter.disable()
 
     process_item(
         seventh_item,
@@ -413,13 +413,12 @@ def main() -> None:
         sorter,
     )
 
-    sorter.is_available = True
+    sorter.enable()
 
     items.append(seventh_item)
     items.append(eighth_item)
 
-    wms.is_available = False
-    wms.status = WMSStatus.UNAVAILABLE
+    wms.disable()
 
     process_item(
         ninth_item,
@@ -429,8 +428,7 @@ def main() -> None:
         sorter,
     )
 
-    wms.is_available = True
-    wms.status = WMSStatus.AVAILABLE
+    wms.enable()
 
     items.append(ninth_item)
 
@@ -441,7 +439,7 @@ def main() -> None:
 
     controller.buffers.append(backup_buffer)
 
-    conveyor.is_available = False
+    conveyor.disable()
 
     process_item(
         tenth_item,
@@ -451,12 +449,11 @@ def main() -> None:
         sorter,
     )
 
-    conveyor.is_available = True
+    conveyor.enable()
 
     items.append(tenth_item)
 
-    sensor.is_active = False
-    sensor.status = SensorStatus.INACTIVE
+    sensor.deactivate()
 
     process_item(
         eleventh_item,
@@ -466,8 +463,7 @@ def main() -> None:
         sorter,
     )
 
-    sensor.is_active = True
-    sensor.status = SensorStatus.ACTIVE
+    sensor.activate()
 
     items.append(eleventh_item)
 

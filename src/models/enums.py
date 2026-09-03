@@ -29,12 +29,14 @@ class OutputBinStatus(StrEnum):
 
 class SorterStatus(StrEnum):
     IDLE = "IDLE"
+    UNAVAILABLE = "UNAVAILABLE"
     ERROR = "ERROR"
 
 class ConveyorStatus(StrEnum):
     STOPPED = "STOPPED"
     RUNNING = "RUNNING"
-
+    UNAVAILABLE = "UNAVAILABLE"
+    
 class WMSStatus(StrEnum):
     AVAILABLE = "AVAILABLE"
     UNAVAILABLE = "UNAVAILABLE"

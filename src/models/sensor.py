@@ -19,7 +19,6 @@ class Sensor:
 
         self.sensor_id = sensor_id
         self.position = position
-        self.is_active = is_active
         self.detection_count = 0
         self.status = (
             SensorStatus.ACTIVE
@@ -27,7 +26,19 @@ class Sensor:
             else SensorStatus.INACTIVE
         )
 
-    def detect_item(self, item: Item) -> bool:
+    @property
+    def is_active(self) -> bool:
+        return self.status == SensorStatus.ACTIVE
+
+
+    def activate(self) -> None:
+        self.status = SensorStatus.ACTIVE
+
+
+    def deactivate(self) -> None:
+        self.status = SensorStatus.INACTIVE
+
+    def detect_item(self, _item: Item) -> bool:
         if not self.is_active:
             return False
 
@@ -52,5 +63,4 @@ class Sensor:
 
     def report_error(self) -> str:
         self.status = SensorStatus.ERROR
-        self.is_active = False
         return "Sensor error"

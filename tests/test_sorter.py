@@ -5,6 +5,7 @@ from models.exceptions import (
     UnsupportedDirectionError,
 )
 from models.sorter import Sorter
+from models.enums import SorterStatus
 
 
 @pytest.mark.parametrize(
@@ -57,3 +58,38 @@ def test_sorter_raises_error_when_unavailable(item):
 
     with pytest.raises(EquipmentUnavailableError):
         sorter.change_direction(5)
+
+def test_sorter_state_management():
+    # Create an available Sorter
+    # Создаем доступный Sorter
+    sorter = Sorter(
+        sorter_id=1,
+        supported_directions=[1, 2, 3, 4, 5],
+        is_available=True,
+    )
+
+    # Verify the initial state
+    # Проверяем начальное состояние
+    assert sorter.status == SorterStatus.IDLE
+    assert sorter.is_available is True
+
+    # Disable the Sorter
+    # Отключаем Sorter
+    sorter.disable()
+
+    assert sorter.status == SorterStatus.UNAVAILABLE
+    assert sorter.is_available is False
+
+    # Enable the Sorter again
+    # Снова включаем Sorter
+    sorter.enable()
+
+    assert sorter.status == SorterStatus.IDLE
+    assert sorter.is_available is True
+
+    # Simulate a Sorter error
+    # Имитируем ошибку Sorter
+    sorter.report_error()
+
+    assert sorter.status == SorterStatus.ERROR
+    assert sorter.is_available is False

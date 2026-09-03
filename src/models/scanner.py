@@ -18,9 +18,22 @@ class Scanner:
 
         
         self.scanner_id = scanner_id
-        self.is_active = is_active
+        self._is_active = is_active
         self.error_rate = error_rate
         self.scan_count = 0
+
+    @property
+    def is_active(self) -> bool:
+        return self._is_active
+
+
+    def activate(self) -> None:
+        self._is_active = True
+
+
+    def deactivate(self) -> None:
+        self._is_active = False
+        
 
     def detect_item(self) -> bool:
         return self.is_active
