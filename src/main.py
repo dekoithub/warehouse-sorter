@@ -11,6 +11,7 @@ from models.buffer import Buffer
 from models.sorter import Sorter
 from models.output_bin import OutputBin
 from models.statistics import Statistics
+from logging_config import configure_logging
 
 
 def process_conveyor_to_sorter(
@@ -90,6 +91,8 @@ def process_item(
 
 
 def main() -> None:
+    configure_logging()
+    
     item = Item(
         id=1,
         barcode="4601234567890",

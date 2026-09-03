@@ -1,6 +1,11 @@
+import logging
+
 from models.enums import BufferStatus
 from models.exceptions import BufferFullError
 from models.item import Item
+
+
+logger = logging.getLogger(__name__)
 
 
 class Buffer:
@@ -63,4 +68,10 @@ class Buffer:
 
     def report_error(self) -> str:
         self._has_error = True
+
+        logger.error(
+            "Buffer %s entered error state",
+            self.buffer_id,
+        )
+
         return "Buffer error"

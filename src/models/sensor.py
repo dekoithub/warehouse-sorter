@@ -1,6 +1,10 @@
-from models.enums import SensorStatus
+import logging
 
+from models.enums import SensorStatus
 from models.item import Item
+
+
+logger = logging.getLogger(__name__)
 
 
 class Sensor:
@@ -38,8 +42,14 @@ class Sensor:
     def deactivate(self) -> None:
         self.status = SensorStatus.INACTIVE
 
-    def detect_item(self, _item: Item) -> bool:
+    def detect_item(self, item: Item) -> bool:
         if not self.is_active:
+            logger.warning(
+                "Sensor %s cannot detect item %s: status=%s",
+                self.sensor_id,
+                item.id,
+                self.status,
+            )
             return False
 
         self.detection_count += 1

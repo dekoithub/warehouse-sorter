@@ -1,6 +1,11 @@
+import logging
 import random
 
 from models.item import Item
+
+
+logger = logging.getLogger(__name__)
+
 
 class Scanner:
     def __init__(
@@ -29,11 +34,19 @@ class Scanner:
 
     def activate(self) -> None:
         self._is_active = True
+        logger.info(
+            "Scanner %s activated",
+            self.scanner_id,
+        )
 
 
     def deactivate(self) -> None:
         self._is_active = False
-        
+        logger.info(
+            "Scanner %s deactivated",
+            self.scanner_id,
+        )
+
 
     def detect_item(self) -> bool:
         return self.is_active
@@ -53,6 +66,10 @@ class Scanner:
         return barcode
 
     def report_error(self) -> str:
+        logger.error(
+            "Scanner %s reported an error",
+            self.scanner_id,
+        )
         return "Scanner error"
 
     

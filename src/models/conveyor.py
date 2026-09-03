@@ -1,7 +1,11 @@
+import logging
+
 from models.enums import ConveyorStatus
 from models.exceptions import EquipmentUnavailableError
-
 from models.item import Item
+
+
+logger = logging.getLogger(__name__)
 
 
 class Conveyor:
@@ -39,9 +43,18 @@ class Conveyor:
     def enable(self) -> None:
         self.status = ConveyorStatus.STOPPED
 
+        logger.info(
+            "Conveyor %s enabled",
+            self.conveyor_id,
+        )
 
     def disable(self) -> None:
         self.status = ConveyorStatus.UNAVAILABLE
+
+        logger.info(
+            "Conveyor %s disabled",
+            self.conveyor_id,
+        )
 
     def accept_item(self, item: Item) -> bool:
         if not self.is_available:
@@ -76,7 +89,15 @@ class Conveyor:
         if new_speed <= 0:
             raise ValueError("Conveyor speed must be greater than 0")
 
+        old_speed = self.speed
         self.speed = new_speed
+
+        logger.info(
+            "Conveyor %s speed changed from %s to %s",
+            self.conveyor_id,
+            old_speed,
+            new_speed,
+        )
 
     def stop(self) -> bool:
         if not self.is_available:
@@ -85,6 +106,12 @@ class Conveyor:
             )
 
         self.status = ConveyorStatus.STOPPED
+
+        logger.debug(
+            "Conveyor %s stopped",
+            self.conveyor_id,
+        )
+
         return True
 
     def start(self) -> bool:
@@ -94,6 +121,12 @@ class Conveyor:
             )
 
         self.status = ConveyorStatus.RUNNING
+
+        logger.debug(
+            "Conveyor %s started",
+            self.conveyor_id,
+        )
+
         return True
 
     def report_status(self) -> ConveyorStatus:

@@ -1,10 +1,14 @@
+import logging
+
 from models.enums import SorterStatus
 from models.exceptions import (
     EquipmentUnavailableError,
     UnsupportedDirectionError,
 )
-
 from models.item import Item
+
+
+logger = logging.getLogger(__name__)
 
 
 class Sorter:
@@ -44,9 +48,18 @@ class Sorter:
     def enable(self) -> None:
         self.status = SorterStatus.IDLE
 
+        logger.info(
+            "Sorter %s enabled",
+            self.sorter_id,
+        )
 
     def disable(self) -> None:
         self.status = SorterStatus.UNAVAILABLE
+
+        logger.info(
+            "Sorter %s disabled",
+            self.sorter_id,
+        )
 
     def accept_item(self, item: Item | None) -> bool:
         if not self.is_available:
@@ -100,6 +113,13 @@ class Sorter:
             )
 
         self.current_direction = direction
+
+        logger.debug(
+            "Sorter %s changed direction to %s",
+            self.sorter_id,
+            direction,
+        )
+
         return True
 
     def report_status(self) -> SorterStatus:
@@ -107,4 +127,10 @@ class Sorter:
 
     def report_error(self) -> str:
         self.status = SorterStatus.ERROR
+
+        logger.error(
+            "Sorter %s entered error state",
+            self.sorter_id,
+        )
+
         return "Sorter error"
