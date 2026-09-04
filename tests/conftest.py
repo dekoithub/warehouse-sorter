@@ -23,6 +23,7 @@ def item():
         location="Scanner",
     )
 
+
 @pytest.fixture
 def valid_item_data():
     return {

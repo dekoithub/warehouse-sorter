@@ -1,11 +1,11 @@
 import pytest
 
+from models.enums import SorterStatus
 from models.exceptions import (
     EquipmentUnavailableError,
     UnsupportedDirectionError,
 )
 from models.sorter import Sorter
-from models.enums import SorterStatus
 
 
 @pytest.mark.parametrize(
@@ -30,6 +30,7 @@ def test_sorter_rejects_invalid_data(
             is_available=True,
         )
 
+
 def test_sorter_raises_error_for_unsupported_direction(item):
     sorter = Sorter(
         sorter_id=1,
@@ -39,6 +40,7 @@ def test_sorter_raises_error_for_unsupported_direction(item):
 
     with pytest.raises(UnsupportedDirectionError):
         sorter.sort_item(item, 99)
+
 
 def test_sorter_raises_error_when_unavailable(item):
     # Create an unavailable Sorter
@@ -53,6 +55,7 @@ def test_sorter_raises_error_when_unavailable(item):
     # Сортировка должна завершиться ошибкой, если Sorter недоступен
     with pytest.raises(EquipmentUnavailableError):
         sorter.sort_item(item, 5)
+
 
 def test_sorter_state_management():
     # Create an available Sorter

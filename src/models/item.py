@@ -47,7 +47,7 @@ class Item:
 
         if not location:
             raise ValueError("Location cannot be empty")
-        
+
         self.id = id
         self.barcode = barcode
         self.weight = weight

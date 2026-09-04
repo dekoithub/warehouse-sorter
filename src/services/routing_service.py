@@ -6,7 +6,6 @@ from models.exceptions import EquipmentUnavailableError
 from models.item import Item
 from models.wms import WMS
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -39,9 +38,7 @@ class RoutingService:
                 continue
 
             item.change_status(ItemStatus.MOVING)
-            item.update_location(
-                f"Conveyor {conveyor.conveyor_id}"
-            )
+            item.update_location(f"Conveyor {conveyor.conveyor_id}")
 
             logger.info(
                 "Item %s sent to Conveyor %s",

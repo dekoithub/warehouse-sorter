@@ -4,7 +4,6 @@ from models.enums import ItemStatus
 from models.item import Item
 from models.scanner import Scanner
 
-
 logger = logging.getLogger(__name__)
 
 

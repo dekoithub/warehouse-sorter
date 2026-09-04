@@ -1,14 +1,13 @@
 import logging
 
 from models.enums import ItemStatus
-from models.item import Item
-from models.output_bin import OutputBin
-from models.sorter import Sorter
 from models.exceptions import (
     OutputBinFullError,
     OutputBinNotFoundError,
 )
-
+from models.item import Item
+from models.output_bin import OutputBin
+from models.sorter import Sorter
 
 logger = logging.getLogger(__name__)
 
@@ -47,9 +46,7 @@ class SortingService:
             return False
 
         item.change_status(ItemStatus.SORTED)
-        item.update_location(
-            f"OutputBin {output_bin.bin_id}"
-        )
+        item.update_location(f"OutputBin {output_bin.bin_id}")
 
         logger.info(
             "Item %s sorted to OutputBin %s",
@@ -77,8 +74,7 @@ class SortingService:
 
         if output_bin is None:
             raise OutputBinNotFoundError(
-                f"No OutputBin found for destination "
-                f"{sorted_item.destination}"
+                f"No OutputBin found for destination {sorted_item.destination}"
             )
 
         if not self.send_to_output_bin(
@@ -86,8 +82,7 @@ class SortingService:
             output_bin,
         ):
             raise OutputBinFullError(
-                f"OutputBin {output_bin.bin_id} "
-                f"cannot accept item {sorted_item.id}"
+                f"OutputBin {output_bin.bin_id} cannot accept item {sorted_item.id}"
             )
 
         return sorted_item

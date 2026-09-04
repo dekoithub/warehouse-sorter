@@ -3,7 +3,6 @@ import logging
 from models.enums import SensorStatus
 from models.item import Item
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -24,16 +23,11 @@ class Sensor:
         self.sensor_id = sensor_id
         self.position = position
         self.detection_count = 0
-        self.status = (
-            SensorStatus.ACTIVE
-            if is_active
-            else SensorStatus.INACTIVE
-        )
+        self.status = SensorStatus.ACTIVE if is_active else SensorStatus.INACTIVE
 
     @property
     def is_active(self) -> bool:
         return self.status == SensorStatus.ACTIVE
-
 
     def activate(self) -> None:
         self.status = SensorStatus.ACTIVE

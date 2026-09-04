@@ -1,5 +1,6 @@
-import pytest
 import copy
+
+import pytest
 
 from models.enums import OutputBinStatus
 from models.output_bin import OutputBin
@@ -23,6 +24,7 @@ def test_output_bin_rejects_invalid_data(
             bin_id=bin_id,
             capacity=capacity,
         )
+
 
 def test_output_bin_state_management(item):
     # Create an empty OutputBin

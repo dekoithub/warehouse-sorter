@@ -7,7 +7,6 @@ from models.exceptions import (
 )
 from models.item import Item
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -30,20 +29,15 @@ class Sorter:
 
         if len(supported_directions) != len(set(supported_directions)):
             raise ValueError("Supported directions must be unique")
-    
+
         self.sorter_id = sorter_id
-        self.status = (
-            SorterStatus.IDLE
-            if is_available
-            else SorterStatus.UNAVAILABLE
-        )
+        self.status = SorterStatus.IDLE if is_available else SorterStatus.UNAVAILABLE
         self.current_direction: int | None = None
         self.supported_directions = supported_directions
 
     @property
     def is_available(self) -> bool:
         return self.status == SorterStatus.IDLE
-
 
     def enable(self) -> None:
         self.status = SorterStatus.IDLE
@@ -72,14 +66,10 @@ class Sorter:
 
     def _change_direction(self, direction: int) -> None:
         if not self.is_available:
-            raise EquipmentUnavailableError(
-                f"Sorter {self.sorter_id} is unavailable"
-            )
+            raise EquipmentUnavailableError(f"Sorter {self.sorter_id} is unavailable")
 
         if direction not in self.supported_directions:
-            raise UnsupportedDirectionError(
-                f"Direction {direction} is not supported"
-            )
+            raise UnsupportedDirectionError(f"Direction {direction} is not supported")
 
         self.current_direction = direction
 

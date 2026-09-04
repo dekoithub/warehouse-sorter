@@ -40,6 +40,7 @@ def test_conveyor_rejects_invalid_speed_change():
     with pytest.raises(ValueError):
         conveyor.change_speed(0)
 
+
 def test_conveyor_state_management():
     # Create an available stopped Conveyor
     # Создаем доступный остановленный Conveyor

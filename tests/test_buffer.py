@@ -1,9 +1,10 @@
-import pytest
 import copy
 
-from models.exceptions import BufferFullError
-from models.enums import BufferStatus
+import pytest
+
 from models.buffer import Buffer
+from models.enums import BufferStatus
+from models.exceptions import BufferFullError
 
 
 @pytest.mark.parametrize(
@@ -25,6 +26,7 @@ def test_buffer_rejects_invalid_data(
             capacity=capacity,
         )
 
+
 def test_buffer_raises_error_when_full(item):
     buffer = Buffer(
         buffer_id=1,
@@ -35,6 +37,7 @@ def test_buffer_raises_error_when_full(item):
 
     with pytest.raises(BufferFullError):
         buffer.add_item(item)
+
 
 def test_buffer_state_management(item):
     # Create an empty Buffer

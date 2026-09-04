@@ -44,8 +44,6 @@ def test_item_state_changes(item):
         ("location", ""),
     ],
 )
-
-
 def test_item_rejects_invalid_data(
     valid_item_data,
     field,
@@ -56,6 +54,7 @@ def test_item_rejects_invalid_data(
 
     with pytest.raises(ValueError):
         Item(**data)
+
 
 def test_item_rejects_invalid_destination_update(item):
     # Destination must remain valid after Item creation

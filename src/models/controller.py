@@ -1,10 +1,7 @@
 import logging
 
-from services.routing_service import RoutingService
-from services.buffer_service import BufferService
-from services.sorting_service import SortingService
-from services.scanning_service import ScanningService
-
+from models.buffer import Buffer
+from models.conveyor import Conveyor
 from models.enums import ItemStatus
 from models.exceptions import (
     EquipmentUnavailableError,
@@ -13,16 +10,16 @@ from models.exceptions import (
     RouteNotFoundError,
     UnsupportedDirectionError,
 )
-
 from models.item import Item
-from models.scanner import Scanner
-from models.wms import WMS
-from models.conveyor import Conveyor
-from models.buffer import Buffer
-from models.statistics import Statistics
 from models.output_bin import OutputBin
+from models.scanner import Scanner
 from models.sorter import Sorter
-
+from models.statistics import Statistics
+from models.wms import WMS
+from services.buffer_service import BufferService
+from services.routing_service import RoutingService
+from services.scanning_service import ScanningService
+from services.sorting_service import SortingService
 
 logger = logging.getLogger(__name__)
 
@@ -50,9 +47,7 @@ class Controller:
 
     def route_item(self, item: Item) -> int | None:
         try:
-            destination = self.routing_service.request_route(
-                item.barcode
-            )
+            destination = self.routing_service.request_route(item.barcode)
 
         except (EquipmentUnavailableError, RouteNotFoundError) as error:
             self._handle_routing_failure(
@@ -267,7 +262,7 @@ class Controller:
             self.statistics.register_sorted_item()
 
         return sorted_item
-    
+
     def release_from_buffer(
         self,
         buffer: Buffer,
@@ -291,7 +286,7 @@ class Controller:
             )
 
             return item
-        
+
         if self.buffer_service.return_to_buffer(
             item,
             buffer,

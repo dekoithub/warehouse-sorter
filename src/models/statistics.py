@@ -41,7 +41,6 @@ class Statistics:
 
         self._conveyor_load[conveyor_id] = load
 
-
     def set_output_bin_load(
         self,
         bin_id: int,
@@ -54,7 +53,6 @@ class Statistics:
             raise ValueError("Output bin load cannot be negative")
 
         self._output_bin_load[bin_id] = load
-
 
     def set_simulation_time(self, simulation_time: float) -> None:
         if simulation_time < 0:

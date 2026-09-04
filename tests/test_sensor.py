@@ -1,7 +1,7 @@
 import pytest
 
-from models.sensor import Sensor
 from models.enums import SensorStatus
+from models.sensor import Sensor
 
 
 @pytest.mark.parametrize(
@@ -22,6 +22,7 @@ def test_sensor_rejects_invalid_data(
             position=position,
             is_active=True,
         )
+
 
 def test_sensor_state_management():
     # Create an active Sensor

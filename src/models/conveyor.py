@@ -4,7 +4,6 @@ from models.enums import ConveyorStatus
 from models.exceptions import EquipmentUnavailableError
 from models.item import Item
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -30,9 +29,7 @@ class Conveyor:
         self.capacity = capacity
         self._items: list[Item] = []
         self.status = (
-            ConveyorStatus.STOPPED
-            if is_available
-            else ConveyorStatus.UNAVAILABLE
+            ConveyorStatus.STOPPED if is_available else ConveyorStatus.UNAVAILABLE
         )
 
     @property

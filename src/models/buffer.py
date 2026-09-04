@@ -4,7 +4,6 @@ from models.enums import BufferStatus
 from models.exceptions import BufferFullError
 from models.item import Item
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -48,9 +47,7 @@ class Buffer:
 
     def add_item(self, item: Item) -> bool:
         if self.is_full:
-            raise BufferFullError(
-                f"Buffer {self.buffer_id} is full"
-            )
+            raise BufferFullError(f"Buffer {self.buffer_id} is full")
 
         if not self.is_available():
             return False

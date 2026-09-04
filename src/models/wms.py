@@ -6,7 +6,6 @@ from models.exceptions import (
     RouteNotFoundError,
 )
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -22,7 +21,7 @@ class WMS:
             raise ValueError("Available destinations cannot be empty")
 
         if any(destination <= 0 for destination in available_destinations):
-                raise ValueError("Destinations must be greater than 0")
+            raise ValueError("Destinations must be greater than 0")
 
         for barcode, destination in routes.items():
             if not barcode:
@@ -30,15 +29,11 @@ class WMS:
 
             if destination not in available_destinations:
                 raise ValueError("Route destination is not available")
-        
+
         self._routes = dict(routes)
         self._available_destinations = list(available_destinations)
         self.request_count = 0
-        self.status = (
-            WMSStatus.AVAILABLE
-            if is_available
-            else WMSStatus.UNAVAILABLE
-        )
+        self.status = WMSStatus.AVAILABLE if is_available else WMSStatus.UNAVAILABLE
 
     def register_route(self, barcode: str, destination: int) -> None:
         if not barcode:
@@ -46,7 +41,7 @@ class WMS:
 
         if destination not in self._available_destinations:
             raise ValueError("Destination is not available")
-    
+
         self._routes[barcode] = destination
 
         logger.debug(
@@ -59,16 +54,13 @@ class WMS:
     def is_available(self) -> bool:
         return self.status == WMSStatus.AVAILABLE
 
-
     def enable(self) -> None:
         self.status = WMSStatus.AVAILABLE
         logger.info("WMS enabled")
 
-
     def disable(self) -> None:
         self.status = WMSStatus.UNAVAILABLE
         logger.info("WMS disabled")
-
 
     def get_destination(self, barcode: str) -> int:
         self.request_count += 1
@@ -79,8 +71,6 @@ class WMS:
         destination = self._routes.get(barcode)
 
         if destination is None:
-            raise RouteNotFoundError(
-                f"Route not found for barcode {barcode}"
-            )
+            raise RouteNotFoundError(f"Route not found for barcode {barcode}")
 
         return destination
