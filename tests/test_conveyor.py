@@ -4,6 +4,15 @@ from models.conveyor import Conveyor
 from models.enums import ConveyorStatus
 
 
+def assert_conveyor_state(
+    conveyor: Conveyor,
+    expected_status: ConveyorStatus,
+    expected_available: bool,
+) -> None:
+    assert conveyor.status == expected_status
+    assert conveyor.is_available is expected_available
+
+
 @pytest.mark.parametrize(
     ("conveyor_id", "speed", "capacity"),
     [
@@ -16,10 +25,10 @@ from models.enums import ConveyorStatus
     ],
 )
 def test_conveyor_rejects_invalid_data(
-    conveyor_id,
-    speed,
-    capacity,
-):
+    conveyor_id: int,
+    speed: float,
+    capacity: int,
+) -> None:
     with pytest.raises(ValueError):
         Conveyor(
             conveyor_id=conveyor_id,
@@ -29,7 +38,7 @@ def test_conveyor_rejects_invalid_data(
         )
 
 
-def test_conveyor_rejects_invalid_speed_change():
+def test_conveyor_rejects_invalid_speed_change() -> None:
     conveyor = Conveyor(
         conveyor_id=1,
         speed=1.5,
@@ -41,7 +50,7 @@ def test_conveyor_rejects_invalid_speed_change():
         conveyor.change_speed(0)
 
 
-def test_conveyor_state_management():
+def test_conveyor_state_management() -> None:
     # Create an available stopped Conveyor
     # Создаем доступный остановленный Conveyor
     conveyor = Conveyor(
@@ -51,33 +60,48 @@ def test_conveyor_state_management():
         is_available=True,
     )
 
-    assert conveyor.status == ConveyorStatus.STOPPED
-    assert conveyor.is_available is True
+    assert_conveyor_state(
+        conveyor,
+        ConveyorStatus.STOPPED,
+        True,
+    )
 
     # Start the Conveyor
     # Запускаем Conveyor
     conveyor.start()
 
-    assert conveyor.status == ConveyorStatus.RUNNING
-    assert conveyor.is_available is True
+    assert_conveyor_state(
+        conveyor,
+        ConveyorStatus.RUNNING,
+        True,
+    )
 
     # Stop the Conveyor
     # Останавливаем Conveyor
     conveyor.stop()
 
-    assert conveyor.status == ConveyorStatus.STOPPED
-    assert conveyor.is_available is True
+    assert_conveyor_state(
+        conveyor,
+        ConveyorStatus.STOPPED,
+        True,
+    )
 
     # Disable the Conveyor
     # Делаем Conveyor недоступным
     conveyor.disable()
 
-    assert conveyor.status == ConveyorStatus.UNAVAILABLE
-    assert conveyor.is_available is False
+    assert_conveyor_state(
+        conveyor,
+        ConveyorStatus.UNAVAILABLE,
+        False,
+    )
 
     # Enable the Conveyor again
     # Снова делаем Conveyor доступным
     conveyor.enable()
 
-    assert conveyor.status == ConveyorStatus.STOPPED
-    assert conveyor.is_available is True
+    assert_conveyor_state(
+        conveyor,
+        ConveyorStatus.STOPPED,
+        True,
+    )

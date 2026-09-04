@@ -4,6 +4,15 @@ from models.enums import SensorStatus
 from models.sensor import Sensor
 
 
+def assert_sensor_state(
+    sensor: Sensor,
+    expected_status: SensorStatus,
+    expected_active: bool,
+) -> None:
+    assert sensor.status == expected_status
+    assert sensor.is_active is expected_active
+
+
 @pytest.mark.parametrize(
     ("sensor_id", "position"),
     [
@@ -13,9 +22,9 @@ from models.sensor import Sensor
     ],
 )
 def test_sensor_rejects_invalid_data(
-    sensor_id,
-    position,
-):
+    sensor_id: int,
+    position: str,
+) -> None:
     with pytest.raises(ValueError):
         Sensor(
             sensor_id=sensor_id,
@@ -24,7 +33,7 @@ def test_sensor_rejects_invalid_data(
         )
 
 
-def test_sensor_state_management():
+def test_sensor_state_management() -> None:
     # Create an active Sensor
     # Создаем активный Sensor
     sensor = Sensor(
@@ -35,26 +44,38 @@ def test_sensor_state_management():
 
     # Verify the initial state
     # Проверяем начальное состояние
-    assert sensor.status == SensorStatus.ACTIVE
-    assert sensor.is_active is True
+    assert_sensor_state(
+        sensor,
+        SensorStatus.ACTIVE,
+        True,
+    )
 
     # Deactivate the Sensor
     # Деактивируем Sensor
     sensor.deactivate()
 
-    assert sensor.status == SensorStatus.INACTIVE
-    assert sensor.is_active is False
+    assert_sensor_state(
+        sensor,
+        SensorStatus.INACTIVE,
+        False,
+    )
 
     # Activate the Sensor again
     # Снова активируем Sensor
     sensor.activate()
 
-    assert sensor.status == SensorStatus.ACTIVE
-    assert sensor.is_active is True
+    assert_sensor_state(
+        sensor,
+        SensorStatus.ACTIVE,
+        True,
+    )
 
     # Simulate a Sensor error
     # Имитируем ошибку Sensor
     sensor.mark_error()
 
-    assert sensor.status == SensorStatus.ERROR
-    assert sensor.is_active is False
+    assert_sensor_state(
+        sensor,
+        SensorStatus.ERROR,
+        False,
+    )

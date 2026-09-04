@@ -3,6 +3,7 @@ import logging
 from models.buffer import Buffer
 from models.conveyor import Conveyor
 from models.enums import ItemStatus
+from models.events import SensorEvent
 from models.exceptions import (
     EquipmentUnavailableError,
     OutputBinFullError,
@@ -33,11 +34,41 @@ class Controller:
         self.scanning_service = ScanningService(scanner)
         self.routing_service = RoutingService(wms)
         self.sorting_service = SortingService()
-        self.conveyors: list[Conveyor] = []
-        self.buffers: list[Buffer] = []
-        self.buffer_service = BufferService(self.buffers)
-        self.output_bins: list[OutputBin] = []
+        self._conveyors: list[Conveyor] = []
+        self._buffers: list[Buffer] = []
+        self.buffer_service = BufferService(self._buffers)
+        self._output_bins: list[OutputBin] = []
         self.statistics: Statistics | None = None
+
+    @property
+    def conveyors(self) -> tuple[Conveyor, ...]:
+        return tuple(self._conveyors)
+
+    @property
+    def buffers(self) -> tuple[Buffer, ...]:
+        return tuple(self._buffers)
+
+    @property
+    def output_bins(self) -> tuple[OutputBin, ...]:
+        return tuple(self._output_bins)
+
+    def register_conveyor(
+        self,
+        conveyor: Conveyor,
+    ) -> None:
+        self._conveyors.append(conveyor)
+
+    def register_buffer(
+        self,
+        buffer: Buffer,
+    ) -> None:
+        self._buffers.append(buffer)
+
+    def register_output_bin(
+        self,
+        output_bin: OutputBin,
+    ) -> None:
+        self._output_bins.append(output_bin)
 
     def register_item(self, item: Item) -> Item:
         if self.statistics is not None:
@@ -66,7 +97,7 @@ class Controller:
 
         conveyor = self.routing_service.send_to_conveyor(
             item,
-            self.conveyors,
+            self._conveyors,
         )
 
         if conveyor is not None:
@@ -118,13 +149,13 @@ class Controller:
         if self.statistics is None:
             return None
 
-        for conveyor in self.conveyors:
+        for conveyor in self._conveyors:
             self.statistics.set_conveyor_load(
                 conveyor.conveyor_id,
                 len(conveyor.items),
             )
 
-        for output_bin in self.output_bins:
+        for output_bin in self._output_bins:
             self.statistics.set_output_bin_load(
                 output_bin.bin_id,
                 output_bin.current_load,
@@ -134,7 +165,7 @@ class Controller:
 
     def process_sensor_event(
         self,
-        sensor_event: dict[str, int | str] | None,
+        sensor_event: SensorEvent | None,
         item: Item,
     ) -> int | None:
         if not self._validate_sensor_event(
@@ -154,7 +185,7 @@ class Controller:
 
     def _validate_sensor_event(
         self,
-        sensor_event: dict[str, int | str] | None,
+        sensor_event: SensorEvent | None,
         item: Item,
         source: str,
     ) -> bool:
@@ -166,12 +197,12 @@ class Controller:
             )
             return False
 
-        if sensor_event["item_id"] != item.id:
+        if sensor_event.item_id != item.id:
             logger.warning(
                 "%s event item mismatch: expected %s, received %s",
                 source,
                 item.id,
-                sensor_event["item_id"],
+                sensor_event.item_id,
             )
             return False
 
@@ -211,7 +242,7 @@ class Controller:
 
     def process_sorter_event(
         self,
-        sensor_event: dict[str, int | str] | None,
+        sensor_event: SensorEvent | None,
         item: Item,
         sorter: Sorter,
     ) -> Item | None:
@@ -235,7 +266,7 @@ class Controller:
             sorted_item = self.sorting_service.sort_to_output_bin(
                 item,
                 sorter,
-                self.output_bins,
+                self._output_bins,
             )
 
         except (
@@ -274,7 +305,7 @@ class Controller:
 
         conveyor = self.routing_service.send_to_conveyor(
             item,
-            self.conveyors,
+            self._conveyors,
         )
 
         if conveyor is not None:

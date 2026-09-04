@@ -1,8 +1,8 @@
 import time
 
+from application.controller import Controller
 from logging_config import configure_logging
 from models.buffer import Buffer
-from models.controller import Controller
 from models.conveyor import Conveyor
 from models.enums import ItemStatus
 from models.item import Item
@@ -311,7 +311,7 @@ def main() -> None:
         is_available=True,
     )
 
-    controller.conveyors.append(conveyor)
+    controller.register_conveyor(conveyor)
 
     sensor = Sensor(
         sensor_id=1,
@@ -343,8 +343,8 @@ def main() -> None:
 
     statistics = Statistics()
 
-    controller.buffers.append(buffer)
-    controller.output_bins.append(output_bin)
+    controller.register_buffer(buffer)
+    controller.register_output_bin(output_bin)
     controller.statistics = statistics
 
     start_time = time.perf_counter()
@@ -440,7 +440,7 @@ def main() -> None:
         capacity=2,
     )
 
-    controller.buffers.append(backup_buffer)
+    controller.register_buffer(backup_buffer)
 
     conveyor.disable()
 

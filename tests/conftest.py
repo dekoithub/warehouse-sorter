@@ -1,3 +1,5 @@
+from typing import Any
+
 import pytest
 
 from models.enums import ItemStatus
@@ -5,7 +7,7 @@ from models.item import Item
 
 
 @pytest.fixture
-def item():
+def item() -> Item:
     # Create a reusable Item instance for tests
     # Создаем переиспользуемый экземпляр Item для тестов
     return Item(
@@ -25,7 +27,7 @@ def item():
 
 
 @pytest.fixture
-def valid_item_data():
+def valid_item_data() -> dict[str, Any]:
     return {
         "id": 1,
         "barcode": "4601234567890",

@@ -1,9 +1,12 @@
 import pytest
 
+from models.item import Item
 from models.scanner import Scanner
 
 
-def test_scanner_successful_scan(item):
+def test_scanner_successful_scan(
+    item: Item,
+) -> None:
     # Create an active scanner with guaranteed successful scanning
     # Создаем активный сканер с гарантированно успешным сканированием
     scanner = Scanner(
@@ -18,7 +21,9 @@ def test_scanner_successful_scan(item):
     assert scanner.scan_count == 1
 
 
-def test_scanner_scan_error(item):
+def test_scanner_scan_error(
+    item: Item,
+) -> None:
     # Create a scanner with guaranteed scan failure
     # Создаем сканер с гарантированной ошибкой сканирования
     scanner = Scanner(
@@ -43,9 +48,9 @@ def test_scanner_scan_error(item):
     ],
 )
 def test_scanner_rejects_invalid_data(
-    scanner_id,
-    error_rate,
-):
+    scanner_id: int,
+    error_rate: float,
+) -> None:
     with pytest.raises(ValueError):
         Scanner(
             scanner_id=scanner_id,

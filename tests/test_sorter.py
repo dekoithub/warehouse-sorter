@@ -5,7 +5,17 @@ from models.exceptions import (
     EquipmentUnavailableError,
     UnsupportedDirectionError,
 )
+from models.item import Item
 from models.sorter import Sorter
+
+
+def assert_sorter_state(
+    sorter: Sorter,
+    expected_status: SorterStatus,
+    expected_available: bool,
+) -> None:
+    assert sorter.status == expected_status
+    assert sorter.is_available is expected_available
 
 
 @pytest.mark.parametrize(
@@ -20,9 +30,9 @@ from models.sorter import Sorter
     ],
 )
 def test_sorter_rejects_invalid_data(
-    sorter_id,
-    supported_directions,
-):
+    sorter_id: int,
+    supported_directions: list[int],
+) -> None:
     with pytest.raises(ValueError):
         Sorter(
             sorter_id=sorter_id,
@@ -31,7 +41,9 @@ def test_sorter_rejects_invalid_data(
         )
 
 
-def test_sorter_raises_error_for_unsupported_direction(item):
+def test_sorter_raises_error_for_unsupported_direction(
+    item: Item,
+) -> None:
     sorter = Sorter(
         sorter_id=1,
         supported_directions=[1, 2, 3, 4, 5],
@@ -42,7 +54,9 @@ def test_sorter_raises_error_for_unsupported_direction(item):
         sorter.sort_item(item, 99)
 
 
-def test_sorter_raises_error_when_unavailable(item):
+def test_sorter_raises_error_when_unavailable(
+    item: Item,
+) -> None:
     # Create an unavailable Sorter
     # Создаем недоступный Sorter
     sorter = Sorter(
@@ -57,7 +71,7 @@ def test_sorter_raises_error_when_unavailable(item):
         sorter.sort_item(item, 5)
 
 
-def test_sorter_state_management():
+def test_sorter_state_management() -> None:
     # Create an available Sorter
     # Создаем доступный Sorter
     sorter = Sorter(
@@ -68,26 +82,38 @@ def test_sorter_state_management():
 
     # Verify the initial state
     # Проверяем начальное состояние
-    assert sorter.status == SorterStatus.IDLE
-    assert sorter.is_available is True
+    assert_sorter_state(
+        sorter,
+        SorterStatus.IDLE,
+        True,
+    )
 
     # Disable the Sorter
     # Отключаем Sorter
     sorter.disable()
 
-    assert sorter.status == SorterStatus.UNAVAILABLE
-    assert sorter.is_available is False
+    assert_sorter_state(
+        sorter,
+        SorterStatus.UNAVAILABLE,
+        False,
+    )
 
     # Enable the Sorter again
     # Снова включаем Sorter
     sorter.enable()
 
-    assert sorter.status == SorterStatus.IDLE
-    assert sorter.is_available is True
+    assert_sorter_state(
+        sorter,
+        SorterStatus.IDLE,
+        True,
+    )
 
     # Simulate a Sorter error
     # Имитируем ошибку Sorter
     sorter.mark_error()
 
-    assert sorter.status == SorterStatus.ERROR
-    assert sorter.is_available is False
+    assert_sorter_state(
+        sorter,
+        SorterStatus.ERROR,
+        False,
+    )

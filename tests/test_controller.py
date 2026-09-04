@@ -2,10 +2,12 @@ import copy
 
 import pytest
 
+from application.controller import Controller
 from models.buffer import Buffer
-from models.controller import Controller
 from models.conveyor import Conveyor
 from models.enums import ItemStatus
+from models.events import SensorEvent
+from models.item import Item
 from models.scanner import Scanner
 from models.sorter import Sorter
 from models.wms import WMS
@@ -47,10 +49,10 @@ def create_controller(
     ],
 )
 def test_controller_sends_item_to_manual_processing_on_wms_error(
-    item,
-    routes,
-    wms_available,
-):
+    item: Item,
+    routes: dict[str, int],
+    wms_available: bool,
+) -> None:
     # Create Controller with either a missing route or unavailable WMS
     # Создаем Controller либо без маршрута, либо с недоступной WMS
     controller = create_controller(
@@ -72,7 +74,9 @@ def test_controller_sends_item_to_manual_processing_on_wms_error(
     assert item.location == "Manual Processing"
 
 
-def test_controller_uses_next_conveyor_when_first_is_unavailable(item):
+def test_controller_uses_next_conveyor_when_first_is_unavailable(
+    item: Item,
+) -> None:
     # Create Controller with a valid route
     # Создаем Controller с корректным маршрутом
     controller = create_controller(
@@ -99,12 +103,8 @@ def test_controller_uses_next_conveyor_when_first_is_unavailable(item):
 
     # Register both conveyors in processing order
     # Добавляем оба конвейера в порядке обработки
-    controller.conveyors.extend(
-        [
-            unavailable_conveyor,
-            available_conveyor,
-        ]
-    )
+    controller.register_conveyor(unavailable_conveyor)
+    controller.register_conveyor(available_conveyor)
 
     # Route the Item through Controller
     # Маршрутизируем Item через Controller
@@ -122,7 +122,9 @@ def test_controller_uses_next_conveyor_when_first_is_unavailable(item):
     assert item.location == "Conveyor 2"
 
 
-def test_controller_uses_next_buffer_when_first_is_full(item):
+def test_controller_uses_next_buffer_when_first_is_full(
+    item: Item,
+) -> None:
     # WMS is irrelevant for this test because we test send_to_buffer directly
     # WMS здесь не важна, потому что тестируем send_to_buffer напрямую
     controller = create_controller(routes={})
@@ -148,12 +150,8 @@ def test_controller_uses_next_buffer_when_first_is_full(item):
 
     # Register buffers in processing order
     # Добавляем буферы в порядке обработки
-    controller.buffers.extend(
-        [
-            first_buffer,
-            second_buffer,
-        ]
-    )
+    controller.register_buffer(first_buffer)
+    controller.register_buffer(second_buffer)
 
     # Controller must try to buffer the original Item
     # Controller должен попытаться отправить исходный Item в буфер
@@ -169,7 +167,9 @@ def test_controller_uses_next_buffer_when_first_is_full(item):
     assert item.location == "Buffer 2"
 
 
-def test_controller_sends_item_to_buffer_when_sorter_is_unavailable(item):
+def test_controller_sends_item_to_buffer_when_sorter_is_unavailable(
+    item: Item,
+) -> None:
     # Create Controller with a valid route
     # Создаем Controller с корректным маршрутом
     controller = create_controller(
@@ -182,7 +182,7 @@ def test_controller_sends_item_to_buffer_when_sorter_is_unavailable(item):
         buffer_id=1,
         capacity=2,
     )
-    controller.buffers.append(buffer)
+    controller.register_buffer(buffer)
 
     # Create an unavailable Sorter
     # Создаем недоступный Sorter
@@ -199,7 +199,11 @@ def test_controller_sends_item_to_buffer_when_sorter_is_unavailable(item):
     # Simulate a valid sensor event near the Sorter
     # Имитируем корректное событие сенсора возле Sorter
     result = controller.process_sorter_event(
-        {"item_id": item.id},
+        SensorEvent(
+            sensor_id=1,
+            item_id=item.id,
+            position="Sorter",
+        ),
         item,
         sorter,
     )
@@ -214,7 +218,9 @@ def test_controller_sends_item_to_buffer_when_sorter_is_unavailable(item):
     assert item.location == "Buffer 1"
 
 
-def test_controller_handles_unsupported_sorter_direction(item):
+def test_controller_handles_unsupported_sorter_direction(
+    item: Item,
+) -> None:
     # Create Controller for a normal warehouse route
     # Создаем Controller для обычного маршрута склада
     controller = create_controller(
@@ -236,7 +242,11 @@ def test_controller_handles_unsupported_sorter_direction(item):
     # Process the Item at the Sorter
     # Обрабатываем Item на Sorter
     result = controller.process_sorter_event(
-        {"item_id": item.id},
+        SensorEvent(
+            sensor_id=1,
+            item_id=item.id,
+            position="Sorter",
+        ),
         item,
         sorter,
     )

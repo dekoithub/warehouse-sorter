@@ -1,10 +1,12 @@
+from typing import Any
+
 import pytest
 
 from models.enums import ItemStatus
 from models.item import Item
 
 
-def test_item_initial_data(item):
+def test_item_initial_data(item: Item) -> None:
     # Verify the initial state prepared by the shared fixture
     # Проверяем начальное состояние, подготовленное общей фикстурой
     assert item.id == 1
@@ -15,7 +17,7 @@ def test_item_initial_data(item):
     assert item.location == "Scanner"
 
 
-def test_item_state_changes(item):
+def test_item_state_changes(item: Item) -> None:
     # Change the Item state through its public methods
     # Изменяем состояние Item через его публичные методы
     item.change_status(ItemStatus.MOVING)
@@ -45,10 +47,10 @@ def test_item_state_changes(item):
     ],
 )
 def test_item_rejects_invalid_data(
-    valid_item_data,
-    field,
-    invalid_value,
-):
+    valid_item_data: dict[str, Any],
+    field: str,
+    invalid_value: object,
+) -> None:
     data = valid_item_data.copy()
     data[field] = invalid_value
 
@@ -56,14 +58,18 @@ def test_item_rejects_invalid_data(
         Item(**data)
 
 
-def test_item_rejects_invalid_destination_update(item):
+def test_item_rejects_invalid_destination_update(
+    item: Item,
+) -> None:
     # Destination must remain valid after Item creation
     # Destination должен оставаться корректным после создания Item
     with pytest.raises(ValueError):
         item.set_destination(0)
 
 
-def test_item_rejects_empty_location_update(item):
+def test_item_rejects_empty_location_update(
+    item: Item,
+) -> None:
     # Location cannot become empty after Item creation
     # Location не может стать пустой после создания Item
     with pytest.raises(ValueError):

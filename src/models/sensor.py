@@ -1,6 +1,7 @@
 import logging
 
 from models.enums import SensorStatus
+from models.events import SensorEvent
 from models.item import Item
 
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ class Sensor:
     def detect_item(
         self,
         item: Item,
-    ) -> dict[str, int | str] | None:
+    ) -> SensorEvent | None:
         if not self.is_active:
             logger.warning(
                 "Sensor %s cannot detect item %s: status=%s",
@@ -60,11 +61,11 @@ class Sensor:
 
         self.detection_count += 1
 
-        return {
-            "sensor_id": self.sensor_id,
-            "item_id": item.id,
-            "position": self.position,
-        }
+        return SensorEvent(
+            sensor_id=self.sensor_id,
+            item_id=item.id,
+            position=self.position,
+        )
 
     def mark_error(self) -> None:
         self.status = SensorStatus.ERROR
