@@ -56,3 +56,16 @@ def test_item_rejects_invalid_data(
 
     with pytest.raises(ValueError):
         Item(**data)
+
+def test_item_rejects_invalid_destination_update(item):
+    # Destination must remain valid after Item creation
+    # Destination должен оставаться корректным после создания Item
+    with pytest.raises(ValueError):
+        item.set_destination(0)
+
+
+def test_item_rejects_empty_location_update(item):
+    # Location cannot become empty after Item creation
+    # Location не может стать пустой после создания Item
+    with pytest.raises(ValueError):
+        item.update_location("")

@@ -482,7 +482,9 @@ def main() -> None:
 
     end_time = time.perf_counter()
 
-    statistics.simulation_time = end_time - start_time
+    statistics.set_simulation_time(
+        end_time - start_time
+    )
 
     for current_item in items:
         print()

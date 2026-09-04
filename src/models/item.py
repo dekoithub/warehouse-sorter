@@ -61,27 +61,17 @@ class Item:
         self.destination = destination
         self.location = location
 
-    def get_info(self) -> dict[str, object]:
-        return {
-            "id": self.id,
-            "barcode": self.barcode,
-            "weight": self.weight,
-            "width": self.width,
-            "height": self.height,
-            "length": self.length,
-            "category": self.category,
-            "delivery_type": self.delivery_type,
-            "is_flammable": self.is_flammable,
-            "status": self.status,
-            "destination": self.destination,
-            "location": self.location,
-        }
-
     def change_status(self, new_status: ItemStatus) -> None:
         self.status = new_status
 
     def set_destination(self, destination: int | None) -> None:
+        if destination is not None and destination <= 0:
+            raise ValueError("Destination must be greater than 0")
+
         self.destination = destination
 
     def update_location(self, location: str) -> None:
+        if not location:
+            raise ValueError("Location cannot be empty")
+
         self.location = location

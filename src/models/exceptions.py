@@ -16,3 +16,11 @@ class BufferFullError(WarehouseError):
 
 class UnsupportedDirectionError(WarehouseError):
     pass
+
+
+class OutputBinNotFoundError(WarehouseError):
+    pass
+
+
+class OutputBinFullError(WarehouseError):
+    pass

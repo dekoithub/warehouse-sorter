@@ -1,9 +1,15 @@
 import logging
 
+from services.routing_service import RoutingService
+from services.buffer_service import BufferService
+from services.sorting_service import SortingService
+from services.scanning_service import ScanningService
+
 from models.enums import ItemStatus
 from models.exceptions import (
-    BufferFullError,
     EquipmentUnavailableError,
+    OutputBinFullError,
+    OutputBinNotFoundError,
     RouteNotFoundError,
     UnsupportedDirectionError,
 )
@@ -27,10 +33,12 @@ class Controller:
         scanner: Scanner,
         wms: WMS,
     ) -> None:
-        self.scanner = scanner
-        self.wms = wms
+        self.scanning_service = ScanningService(scanner)
+        self.routing_service = RoutingService(wms)
+        self.sorting_service = SortingService()
         self.conveyors: list[Conveyor] = []
         self.buffers: list[Buffer] = []
+        self.buffer_service = BufferService(self.buffers)
         self.output_bins: list[OutputBin] = []
         self.statistics: Statistics | None = None
 
@@ -40,25 +48,17 @@ class Controller:
 
         return item
 
-    def request_route(self, barcode: str) -> int:
-        return self.wms.get_destination(barcode)
-
     def route_item(self, item: Item) -> int | None:
         try:
-            destination = self.request_route(item.barcode)
-
-        except (EquipmentUnavailableError, RouteNotFoundError) as error:
-            logger.warning(
-                "Failed to route item %s: %s",
-                item.id,
-                error,
+            destination = self.routing_service.request_route(
+                item.barcode
             )
 
-            if self.statistics is not None:
-                self.statistics.register_routing_error()
-
-            self.send_to_manual_processing(item)
-
+        except (EquipmentUnavailableError, RouteNotFoundError) as error:
+            self._handle_routing_failure(
+                item,
+                error,
+            )
             return None
 
         item.set_destination(destination)
@@ -69,28 +69,12 @@ class Controller:
             destination,
         )
 
-        for conveyor in self.conveyors:
-            try:
-                accepted = conveyor.accept_item(item)
+        conveyor = self.routing_service.send_to_conveyor(
+            item,
+            self.conveyors,
+        )
 
-                if not accepted:
-                    continue
-
-                conveyor.start()
-
-            except EquipmentUnavailableError as error:
-                logger.warning("%s", error)
-                continue
-
-            item.change_status(ItemStatus.MOVING)
-            item.update_location(f"Conveyor {conveyor.conveyor_id}")
-
-            logger.info(
-                "Item %s sent to Conveyor %s",
-                item.id,
-                conveyor.conveyor_id,
-            )
-
+        if conveyor is not None:
             return destination
 
         if self.send_to_buffer(item):
@@ -113,30 +97,10 @@ class Controller:
         self.send_to_manual_processing(item)
 
     def send_to_buffer(self, item: Item) -> bool:
-        for buffer in self.buffers:
-            try:
-                added = buffer.add_item(item)
-
-            except BufferFullError as error:
-                logger.warning("%s", error)
-                continue
-
-            if added:
-                item.change_status(ItemStatus.BUFFERED)
-                item.update_location(f"Buffer {buffer.buffer_id}")
-
-                logger.info(
-                    "Item %s sent to Buffer %s",
-                    item.id,
-                    buffer.buffer_id,
-                )
-
-                if self.statistics is not None:
-                    self.statistics.register_buffer_usage()
-
-                return True
-
-        return False
+        return self.buffer_service.send_to_buffer(
+            item,
+            self.statistics,
+        )
 
     def send_to_manual_processing(self, item: Item) -> bool:
         if item.status == ItemStatus.MANUAL_PROCESSING:
@@ -160,10 +124,16 @@ class Controller:
             return None
 
         for conveyor in self.conveyors:
-            self.statistics.conveyor_load[conveyor.conveyor_id] = len(conveyor.items)
+            self.statistics.set_conveyor_load(
+                conveyor.conveyor_id,
+                len(conveyor.items),
+            )
 
         for output_bin in self.output_bins:
-            self.statistics.output_bin_load[output_bin.bin_id] = output_bin.current_load
+            self.statistics.set_output_bin_load(
+                output_bin.bin_id,
+                output_bin.current_load,
+            )
 
         return self.statistics.generate_report()
 
@@ -172,38 +142,77 @@ class Controller:
         sensor_event: dict[str, int | str] | None,
         item: Item,
     ) -> int | None:
-        if sensor_event is None:
-            logger.warning(
-                "Sensor event is missing for item %s",
-                item.id,
-            )
-            return None
-        
-        if sensor_event["item_id"] != item.id:
-            logger.warning(
-                "Sensor event item mismatch: expected %s, received %s",
-                item.id,
-                sensor_event["item_id"],
-            )
+        if not self._validate_sensor_event(
+            sensor_event,
+            item,
+            "Sensor",
+        ):
             return None
 
-        item.change_status(ItemStatus.SCANNING)
-
-        barcode = self.scanner.scan(item)
+        barcode = self.scanning_service.scan_item(item)
 
         if barcode is None:
             self.handle_scan_error(item)
             return None
 
-        logger.info(
-            "Item %s scanned successfully: barcode %s",
+        return self.route_item(item)
+
+    def _validate_sensor_event(
+        self,
+        sensor_event: dict[str, int | str] | None,
+        item: Item,
+        source: str,
+    ) -> bool:
+        if sensor_event is None:
+            logger.warning(
+                "%s event is missing for item %s",
+                source,
+                item.id,
+            )
+            return False
+
+        if sensor_event["item_id"] != item.id:
+            logger.warning(
+                "%s event item mismatch: expected %s, received %s",
+                source,
+                item.id,
+                sensor_event["item_id"],
+            )
+            return False
+
+        return True
+
+    def _handle_routing_failure(
+        self,
+        item: Item,
+        error: Exception,
+    ) -> None:
+        logger.warning(
+            "Failed to route item %s: %s",
             item.id,
-            barcode,
+            error,
         )
 
-        item.change_status(ItemStatus.ROUTING)
+        if self.statistics is not None:
+            self.statistics.register_routing_error()
 
-        return self.route_item(item)
+        self.send_to_manual_processing(item)
+
+    def _handle_processing_failure(
+        self,
+        item: Item,
+        error: Exception,
+    ) -> None:
+        logger.warning(
+            "Failed to process item %s: %s",
+            item.id,
+            error,
+        )
+
+        if self.send_to_buffer(item):
+            return
+
+        self.send_to_manual_processing(item)
 
     def process_sorter_event(
         self,
@@ -211,19 +220,11 @@ class Controller:
         item: Item,
         sorter: Sorter,
     ) -> Item | None:
-        if sensor_event is None:
-            logger.warning(
-                "Sorter sensor event is missing for item %s",
-                item.id,
-            )
-            return None
-
-        if sensor_event["item_id"] != item.id:
-            logger.warning(
-                "Sorter sensor item mismatch: expected %s, received %s",
-                item.id,
-                sensor_event["item_id"],
-            )
+        if not self._validate_sensor_event(
+            sensor_event,
+            item,
+            "Sorter sensor",
+        ):
             return None
 
         if item.destination is None:
@@ -236,110 +237,52 @@ class Controller:
             return None
 
         try:
-            sorted_item = sorter.sort_item(
+            sorted_item = self.sorting_service.sort_to_output_bin(
                 item,
-                item.destination,
+                sorter,
+                self.output_bins,
             )
 
-        except UnsupportedDirectionError as error:
-            logger.warning(
-                "Failed to sort item %s: %s",
-                item.id,
+        except (
+            UnsupportedDirectionError,
+            OutputBinNotFoundError,
+        ) as error:
+            self._handle_routing_failure(
+                item,
                 error,
             )
-
-            if self.statistics is not None:
-                self.statistics.register_routing_error()
-
-            self.send_to_manual_processing(item)
             return None
 
-        except EquipmentUnavailableError as error:
-            logger.warning("%s", error)
-
-            if self.send_to_buffer(item):
-                return None
-
-            self.send_to_manual_processing(item)
-            return None
-        
-        for output_bin in self.output_bins:
-            if output_bin.bin_id != sorted_item.destination:
-                continue
-
-            if output_bin.add_item(sorted_item):
-                sorted_item.change_status(ItemStatus.SORTED)
-                sorted_item.update_location(
-                    f"OutputBin {output_bin.bin_id}"
-                )
-
-                logger.info(
-                    "Item %s sorted to OutputBin %s",
-                    sorted_item.id,
-                    output_bin.bin_id,
-                )
-
-                if self.statistics is not None:
-                    self.statistics.register_sorted_item()
-
-                return sorted_item
-
-            logger.warning(
-                "OutputBin %s cannot accept item %s",
-                output_bin.bin_id,
-                sorted_item.id,
+        except (
+            EquipmentUnavailableError,
+            OutputBinFullError,
+        ) as error:
+            self._handle_processing_failure(
+                item,
+                error,
             )
-
-            if self.send_to_buffer(sorted_item):
-                return None
-
-            self.send_to_manual_processing(sorted_item)
             return None
-
-        logger.warning(
-            "No OutputBin found for item %s with destination %s",
-            sorted_item.id,
-            sorted_item.destination,
-        )
 
         if self.statistics is not None:
-            self.statistics.register_routing_error()
+            self.statistics.register_sorted_item()
 
-        self.send_to_manual_processing(sorted_item)
-
-        return None
+        return sorted_item
     
     def release_from_buffer(
         self,
         buffer: Buffer,
     ) -> Item | None:
-        item = buffer.release_item()
+        item = self.buffer_service.release_item(buffer)
 
         if item is None:
             return None
 
-        logger.info(
-            "Item %s released from Buffer %s",
-            item.id,
-            buffer.buffer_id,
+        conveyor = self.routing_service.send_to_conveyor(
+            item,
+            self.conveyors,
         )
 
-        for conveyor in self.conveyors:
-            try:
-                accepted = conveyor.accept_item(item)
-
-                if not accepted:
-                    continue
-
-                conveyor.start()
-
-            except EquipmentUnavailableError as error:
-                logger.warning("%s", error)
-                continue
-
-            item.change_status(ItemStatus.MOVING)
-            item.update_location(f"Conveyor {conveyor.conveyor_id}")
-
+        if conveyor is not None:
             logger.info(
                 "Item %s moved from Buffer %s to Conveyor %s",
                 item.id,
@@ -349,16 +292,10 @@ class Controller:
 
             return item
         
-        if buffer.add_item(item):
-            item.change_status(ItemStatus.BUFFERED)
-            item.update_location(f"Buffer {buffer.buffer_id}")
-
-            logger.warning(
-                "No Conveyor available for item %s; returned to Buffer %s",
-                item.id,
-                buffer.buffer_id,
-            )
-
+        if self.buffer_service.return_to_buffer(
+            item,
+            buffer,
+        ):
             return None
 
         self.send_to_manual_processing(item)
