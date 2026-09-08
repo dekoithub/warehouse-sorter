@@ -65,3 +65,31 @@ CREATE TABLE routes (
         REFERENCES destinations(id)
         ON DELETE RESTRICT
 );
+
+CREATE TABLE processing_events (
+    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    item_id BIGINT NOT NULL,
+    event_type TEXT NOT NULL,
+    location TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOT(),
+
+    CONSTRAINT processing_events_type_valid
+        CHECK (
+            event_type IN (
+                'CREATED',
+                'SCANNING',
+                'ROUTING',
+                'MOVING',
+                'BUFFERED',
+                'SORTED',
+                'MANUAL_PROCESSING',
+                'ERROR'
+            )
+        ),
+
+    CONSTRAINT processing_events_item_fk
+        FOREIGN KEY (item_id)
+        REFERENCES item(id)
+        ON DELETE CASCADE
+);
+
