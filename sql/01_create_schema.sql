@@ -58,7 +58,7 @@ CREATE TABLE routes (
     barcode TEXT NOT NULL UNIQUE,
     destination_id BIGINT NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOT(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT routes_destination_fk
         FOREIGN KEY (destination_id)
@@ -71,7 +71,7 @@ CREATE TABLE processing_events (
     item_id BIGINT NOT NULL,
     event_type TEXT NOT NULL,
     location TEXT NOT NULL,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOT(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
 
     CONSTRAINT processing_events_type_valid
         CHECK (
@@ -89,7 +89,7 @@ CREATE TABLE processing_events (
 
     CONSTRAINT processing_events_item_fk
         FOREIGN KEY (item_id)
-        REFERENCES item(id)
+        REFERENCES items(id)
         ON DELETE CASCADE
 );
 
