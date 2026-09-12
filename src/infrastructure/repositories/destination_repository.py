@@ -39,3 +39,24 @@ def create_destination(
         session.commit()
 
         return destination
+
+def set_destination_active(
+    code: int,
+    is_active: bool,
+) -> DestinationModel | None:
+    with SessionFactory() as session:
+        statement = (
+            select(DestinationModel)
+            .where(DestinationModel.code == code)
+        )
+
+        destination = session.scalars(statement).one_or_none()
+
+        if destination is None:
+            return None
+
+        destination.is_active = is_active
+
+        session.commit()
+
+        return destination
