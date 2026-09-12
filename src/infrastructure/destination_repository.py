@@ -43,3 +43,15 @@ def get_destination_by_code(code: int) -> tuple[Any, ...] | None:
             )
 
             return cursor.fetchone()
+
+def set_destination_active(code: int, is_active: bool) -> None:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                UPDATE destinations
+                SET is_active = %s
+                WHERE code = %s;
+                """,
+                (is_active, code),
+            )
