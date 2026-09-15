@@ -6,20 +6,14 @@ from infrastructure.sqlalchemy_database import SessionFactory
 
 def get_all_destinations() -> list[DestinationModel]:
     with SessionFactory() as session:
-        statement = (
-            select(DestinationModel)
-            .order_by(DestinationModel.id)
-        )
+        statement = select(DestinationModel).order_by(DestinationModel.id)
 
         return list(session.scalars(statement).all())
 
 
 def get_destination_by_code(code: int) -> DestinationModel | None:
     with SessionFactory() as session:
-        statement = (
-            select(DestinationModel)
-            .where(DestinationModel.code == code)
-        )
+        statement = select(DestinationModel).where(DestinationModel.code == code)
 
         return session.scalars(statement).one_or_none()
 
@@ -40,15 +34,13 @@ def create_destination(
 
         return destination
 
+
 def set_destination_active(
     code: int,
     is_active: bool,
 ) -> DestinationModel | None:
     with SessionFactory() as session:
-        statement = (
-            select(DestinationModel)
-            .where(DestinationModel.code == code)
-        )
+        statement = select(DestinationModel).where(DestinationModel.code == code)
 
         destination = session.scalars(statement).one_or_none()
 

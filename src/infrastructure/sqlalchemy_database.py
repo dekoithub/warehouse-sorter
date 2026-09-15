@@ -1,7 +1,8 @@
 import os
 
-from sqlalchemy import Engine, create_engine, text
+from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import sessionmaker
+
 
 def get_database_url() -> str:
     host = os.getenv("DB_HOST", "localhost")
@@ -10,10 +11,7 @@ def get_database_url() -> str:
     user = os.getenv("DB_USER", "postgres")
     password = os.environ["DB_PASSWORD"]
 
-    return (
-        f"postgresql+psycopg://{user}:{password}"
-        f"@{host}:{port}/{database}"
-    )
+    return f"postgresql+psycopg://{user}:{password}@{host}:{port}/{database}"
 
 
 engine: Engine = create_engine(get_database_url())

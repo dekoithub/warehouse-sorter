@@ -7,8 +7,10 @@ from typing import TYPE_CHECKING
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    CheckConstraint,
     DateTime,
     ForeignKey,
+    Identity,
     Integer,
     Numeric,
     Text,
@@ -26,10 +28,36 @@ if TYPE_CHECKING:
 class ItemModel(Base):
     __tablename__ = "items"
 
+    __table_args__ = (
+        CheckConstraint(
+            "weight > 0",
+            name="items_weight_positive",
+        ),
+        CheckConstraint(
+            "width > 0 AND height > 0 AND length > 0",
+            name="items_dimensions_positive",
+        ),
+        CheckConstraint(
+            """
+            status IN (
+                'CREATED',
+                'SCANNING',
+                'ROUTING',
+                'MOVING',
+                'BUFFERED',
+                'SORTED',
+                'MANUAL_PROCESSING',
+                'ERROR'
+            )
+            """,
+            name="items_status_valid",
+        ),
+    )
+
     id: Mapped[int] = mapped_column(
         BigInteger,
+        Identity(always=True),
         primary_key=True,
-        autoincrement=True,
     )
 
     barcode: Mapped[str] = mapped_column(
@@ -80,6 +108,7 @@ class ItemModel(Base):
     )
 
     destination_id: Mapped[int | None] = mapped_column(
+        BigInteger,
         ForeignKey(
             "destinations.id",
             ondelete="SET NULL",

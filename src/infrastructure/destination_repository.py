@@ -16,6 +16,7 @@ def get_all_destinations() -> list[tuple[Any, ...]]:
 
             return cursor.fetchall()
 
+
 def create_destination(code: int, name: str) -> None:
     with get_connection() as connection:
         with connection.cursor() as cursor:
@@ -30,6 +31,7 @@ def create_destination(code: int, name: str) -> None:
                 (code, name),
             )
 
+
 def get_destination_by_code(code: int) -> tuple[Any, ...] | None:
     with get_connection() as connection:
         with connection.cursor() as cursor:
@@ -43,6 +45,7 @@ def get_destination_by_code(code: int) -> tuple[Any, ...] | None:
             )
 
             return cursor.fetchone()
+
 
 def set_destination_active(code: int, is_active: bool) -> None:
     with get_connection() as connection:

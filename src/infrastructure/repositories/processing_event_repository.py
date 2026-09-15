@@ -24,19 +24,12 @@ def create_processing_event(
     location: str,
 ) -> ProcessingEventModel:
     with SessionFactory() as session:
-        item_statement = (
-            select(ItemModel)
-            .where(ItemModel.barcode == barcode)
-        )
+        item_statement = select(ItemModel).where(ItemModel.barcode == barcode)
 
-        item = session.scalars(
-            item_statement
-        ).one_or_none()
+        item = session.scalars(item_statement).one_or_none()
 
         if item is None:
-            raise ValueError(
-                f"Item with barcode {barcode} does not exist"
-            )
+            raise ValueError(f"Item with barcode {barcode} does not exist")
 
         event = ProcessingEventModel(
             item=item,

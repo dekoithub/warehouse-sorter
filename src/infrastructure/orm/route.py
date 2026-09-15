@@ -8,6 +8,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     ForeignKey,
+    Identity,
     Text,
     text,
 )
@@ -24,8 +25,8 @@ class RouteModel(Base):
 
     id: Mapped[int] = mapped_column(
         BigInteger,
+        Identity(always=True),
         primary_key=True,
-        autoincrement=True,
     )
 
     barcode: Mapped[str] = mapped_column(
@@ -35,6 +36,7 @@ class RouteModel(Base):
     )
 
     destination_id: Mapped[int] = mapped_column(
+        BigInteger,
         ForeignKey(
             "destinations.id",
             ondelete="RESTRICT",
