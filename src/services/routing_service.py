@@ -4,7 +4,7 @@ from models.conveyor import Conveyor
 from models.enums import ItemStatus
 from models.exceptions import EquipmentUnavailableError
 from models.item import Item
-from models.wms import WMS
+from services.route_provider import RouteProvider
 
 logger = logging.getLogger(__name__)
 
@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 class RoutingService:
     def __init__(
         self,
-        wms: WMS,
+        route_provider: RouteProvider,
     ) -> None:
-        self._wms = wms
+        self._route_provider = route_provider
 
     def request_route(self, barcode: str) -> int:
-        return self._wms.get_destination(barcode)
+        return self._route_provider.get_destination(barcode)
 
     def send_to_conveyor(
         self,

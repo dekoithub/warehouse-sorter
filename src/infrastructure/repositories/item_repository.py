@@ -89,16 +89,14 @@ def update_item_state(
 
         return item
 
+
 def update_item_state_with_event(
     barcode: str,
     status: str,
     location: str,
 ) -> ItemModel | None:
     with SessionFactory() as session:
-        statement = (
-            select(ItemModel)
-            .where(ItemModel.barcode == barcode)
-        )
+        statement = select(ItemModel).where(ItemModel.barcode == barcode)
 
         item = session.scalars(statement).one_or_none()
 

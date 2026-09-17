@@ -12,7 +12,6 @@ from infrastructure.repositories.destination_repository import (
     set_destination_active,
 )
 
-
 router = APIRouter(
     prefix="/destinations",
     tags=["destinations"],
@@ -27,8 +26,7 @@ def read_destinations() -> list[DestinationResponse]:
     destinations = get_all_destinations()
 
     return [
-        DestinationResponse.model_validate(destination)
-        for destination in destinations
+        DestinationResponse.model_validate(destination) for destination in destinations
     ]
 
 
@@ -58,9 +56,7 @@ def read_destination(
 def create_destination_endpoint(
     destination_data: DestinationCreate,
 ) -> DestinationResponse:
-    existing_destination = get_destination_by_code(
-        destination_data.code
-    )
+    existing_destination = get_destination_by_code(destination_data.code)
 
     if existing_destination is not None:
         raise HTTPException(

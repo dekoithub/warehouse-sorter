@@ -16,8 +16,8 @@ from models.output_bin import OutputBin
 from models.scanner import Scanner
 from models.sorter import Sorter
 from models.statistics import Statistics
-from models.wms import WMS
 from services.buffer_service import BufferService
+from services.route_provider import RouteProvider
 from services.routing_service import RoutingService
 from services.scanning_service import ScanningService
 from services.sorting_service import SortingService
@@ -29,7 +29,7 @@ class Controller:
     def __init__(
         self,
         scanner: Scanner,
-        wms: WMS,
+        wms: RouteProvider,
     ) -> None:
         self.scanning_service = ScanningService(scanner)
         self.routing_service = RoutingService(wms)

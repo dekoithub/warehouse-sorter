@@ -12,7 +12,6 @@ from infrastructure.repositories.processing_event_repository import (
     get_events_by_item_barcode,
 )
 
-
 router = APIRouter(
     prefix="/items",
     tags=["items"],
@@ -26,10 +25,7 @@ router = APIRouter(
 def read_items() -> list[ItemResponse]:
     items = get_all_items()
 
-    return [
-        ItemResponse.model_validate(item)
-        for item in items
-    ]
+    return [ItemResponse.model_validate(item) for item in items]
 
 
 @router.get(
@@ -67,10 +63,7 @@ def read_item_events(
 
     events = get_events_by_item_barcode(barcode)
 
-    return [
-        ProcessingEventResponse.model_validate(event)
-        for event in events
-    ]
+    return [ProcessingEventResponse.model_validate(event) for event in events]
 
 
 @router.post(
@@ -81,9 +74,7 @@ def read_item_events(
 def create_item_endpoint(
     item_data: ItemCreate,
 ) -> ItemResponse:
-    existing_item = get_item_by_barcode(
-        item_data.barcode
-    )
+    existing_item = get_item_by_barcode(item_data.barcode)
 
     if existing_item is not None:
         raise HTTPException(

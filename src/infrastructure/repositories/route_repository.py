@@ -4,7 +4,16 @@ from infrastructure.orm import DestinationModel, RouteModel
 from infrastructure.sqlalchemy_database import SessionFactory
 
 
-def get_route_by_barcode(barcode: str) -> RouteModel | None:
+def get_all_routes() -> list[RouteModel]:
+    with SessionFactory() as session:
+        statement = select(RouteModel).order_by(RouteModel.id)
+
+        return list(session.scalars(statement).all())
+
+
+def get_route_by_barcode(
+    barcode: str,
+) -> RouteModel | None:
     with SessionFactory() as session:
         statement = select(RouteModel).where(RouteModel.barcode == barcode)
 
@@ -54,3 +63,23 @@ def set_route_active(
         session.commit()
 
         return route
+
+
+def get_destination_code_by_barcode(
+    barcode: str,
+) -> int | None:
+    with SessionFactory() as session:
+        statement = (
+            select(DestinationModel.code)
+            .join(
+                RouteModel,
+                RouteModel.destination_id == DestinationModel.id,
+            )
+            .where(
+                RouteModel.barcode == barcode,
+                RouteModel.is_active.is_(True),
+                DestinationModel.is_active.is_(True),
+            )
+        )
+
+        return session.scalar(statement)
