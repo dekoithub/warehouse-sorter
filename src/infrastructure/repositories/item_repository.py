@@ -2,7 +2,11 @@ from decimal import Decimal
 
 from sqlalchemy import select
 
-from infrastructure.orm import DestinationModel, ItemModel
+from infrastructure.orm import (
+    DestinationModel,
+    ItemModel,
+    ProcessingEventModel,
+)
 from infrastructure.sqlalchemy_database import SessionFactory
 
 
@@ -81,6 +85,36 @@ def update_item_state(
         item.status = status
         item.location = location
 
+        session.commit()
+
+        return item
+
+def update_item_state_with_event(
+    barcode: str,
+    status: str,
+    location: str,
+) -> ItemModel | None:
+    with SessionFactory() as session:
+        statement = (
+            select(ItemModel)
+            .where(ItemModel.barcode == barcode)
+        )
+
+        item = session.scalars(statement).one_or_none()
+
+        if item is None:
+            return None
+
+        item.status = status
+        item.location = location
+
+        event = ProcessingEventModel(
+            item=item,
+            event_type=status,
+            location=location,
+        )
+
+        session.add(event)
         session.commit()
 
         return item
