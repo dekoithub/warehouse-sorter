@@ -26,7 +26,10 @@ class ItemCreate(BaseModel):
     delivery_type: str = Field(min_length=1)
     status: ItemStatus = "CREATED"
     location: str = Field(min_length=1)
-    destination_code: int | None = Field(default=None, gt=0)
+    destination_code: int | None = Field(
+        default=None,
+        gt=0,
+    )
 
 
 class ItemStateUpdate(BaseModel):
@@ -50,3 +53,13 @@ class ItemResponse(BaseModel):
     destination_id: int | None
     location: str
     created_at: datetime
+
+
+class ItemProcessResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    barcode: str
+    status: str
+    destination: int | None
+    location: str

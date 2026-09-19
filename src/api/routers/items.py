@@ -1,7 +1,17 @@
 from fastapi import APIRouter, HTTPException, Path, status
 
-from api.schemas.item import ItemCreate, ItemResponse, ItemStateUpdate
+from api.dependencies import build_process_item_use_case
+from api.schemas.item import (
+    ItemCreate,
+    ItemProcessResponse,
+    ItemResponse,
+    ItemStateUpdate,
+)
 from api.schemas.processing_event import ProcessingEventResponse
+from application.use_cases.process_item import (
+    ItemNotFoundError,
+    ItemPersistenceError,
+)
 from infrastructure.repositories.item_repository import (
     create_item,
     get_all_items,
@@ -102,6 +112,33 @@ def create_item_endpoint(
         ) from error
 
     return ItemResponse.model_validate(item)
+
+
+@router.post(
+    "/{barcode}/process",
+    response_model=ItemProcessResponse,
+)
+def process_item_endpoint(
+    barcode: str = Path(min_length=1),
+) -> ItemProcessResponse:
+    use_case = build_process_item_use_case()
+
+    try:
+        item = use_case.execute(barcode)
+
+    except ItemNotFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(error),
+        ) from error
+
+    except ItemPersistenceError as error:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(error),
+        ) from error
+
+    return ItemProcessResponse.model_validate(item)
 
 
 @router.patch(
