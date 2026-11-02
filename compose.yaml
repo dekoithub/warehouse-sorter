@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:18.6
+    environment:
+      POSTGRES_DB: warehouse_sorter
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d warehouse_sorter",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_NAME: warehouse_sorter
+      DB_USER: postgres
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python -m alembic upgrade head &&
+             uvicorn api.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  postgres_data:
