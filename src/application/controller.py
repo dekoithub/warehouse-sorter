@@ -15,7 +15,7 @@ from models.item import Item
 from models.output_bin import OutputBin
 from models.scanner import Scanner
 from models.sorter import Sorter
-from models.statistics import Statistics
+from models.statistics import Statistics, StatisticsReport
 from services.buffer_service import BufferService
 from services.route_provider import RouteProvider
 from services.routing_service import RoutingService
@@ -76,11 +76,17 @@ class Controller:
 
         return item
 
-    def route_item(self, item: Item) -> int | None:
+    def resolve_route(
+        self,
+        item: Item,
+    ) -> int | None:
         try:
             destination = self.routing_service.request_route(item.barcode)
 
-        except (EquipmentUnavailableError, RouteNotFoundError) as error:
+        except (
+            EquipmentUnavailableError,
+            RouteNotFoundError,
+        ) as error:
             self._handle_routing_failure(
                 item,
                 error,
@@ -94,6 +100,17 @@ class Controller:
             item.id,
             destination,
         )
+
+        return destination
+
+    def route_item(
+        self,
+        item: Item,
+    ) -> int | None:
+        destination = self.resolve_route(item)
+
+        if destination is None:
+            return None
 
         conveyor = self.routing_service.send_to_conveyor(
             item,
@@ -145,7 +162,7 @@ class Controller:
 
         return True
 
-    def update_statistics(self) -> dict[str, object] | None:
+    def update_statistics(self) -> StatisticsReport | None:
         if self.statistics is None:
             return None
 
@@ -294,11 +311,17 @@ class Controller:
 
         return sorted_item
 
+    def take_from_buffer(
+        self,
+        buffer: Buffer,
+    ) -> Item | None:
+        return self.buffer_service.release_item(buffer)
+
     def release_from_buffer(
         self,
         buffer: Buffer,
     ) -> Item | None:
-        item = self.buffer_service.release_item(buffer)
+        item = self.take_from_buffer(buffer)
 
         if item is None:
             return None

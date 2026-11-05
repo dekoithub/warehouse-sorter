@@ -14,12 +14,20 @@ class ScanningService:
     ) -> None:
         self._scanner = scanner
 
-    def scan_item(
+    def start_scan(
+        self,
+        item: Item,
+    ) -> None:
+        # Mark the item as currently being scanned.
+        # Отмечаем, что товар сейчас проходит сканирование.
+        item.change_status(ItemStatus.SCANNING)
+
+    def complete_scan(
         self,
         item: Item,
     ) -> str | None:
-        item.change_status(ItemStatus.SCANNING)
-
+        # Perform the physical scanner operation.
+        # Выполняем операцию физического сканера.
         barcode = self._scanner.scan(item)
 
         if barcode is None:
@@ -34,3 +42,12 @@ class ScanningService:
         item.change_status(ItemStatus.ROUTING)
 
         return barcode
+
+    def scan_item(
+        self,
+        item: Item,
+    ) -> str | None:
+        # Keep the synchronous API for the application layer.
+        # Сохраняем синхронный API для прикладного слоя.
+        self.start_scan(item)
+        return self.complete_scan(item)

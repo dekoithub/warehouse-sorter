@@ -1,3 +1,21 @@
+from typing import TypedDict
+
+
+class StatisticsReport(TypedDict):
+    processed_items: int
+    sorted_items: int
+    manual_processing_items: int
+    scan_errors: int
+    routing_errors: int
+    buffer_usage: int
+    conveyor_load: dict[int, int]
+    output_bin_load: dict[int, int]
+    average_conveyor_load: float
+    average_output_bin_load: float
+    simulation_time: float
+    throughput: float
+    success_rate: float
+
 class Statistics:
     def __init__(self) -> None:
         self.processed_items: int = 0
@@ -60,7 +78,7 @@ class Statistics:
 
         self._simulation_time = simulation_time
 
-    def generate_report(self) -> dict[str, object]:
+    def generate_report(self) -> StatisticsReport:
         average_conveyor_load = (
             sum(self._conveyor_load.values()) / len(self._conveyor_load)
             if self._conveyor_load
