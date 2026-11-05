@@ -16,6 +16,7 @@ class StatisticsReport(TypedDict):
     throughput: float
     success_rate: float
 
+
 class Statistics:
     def __init__(self) -> None:
         self.processed_items: int = 0

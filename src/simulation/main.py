@@ -6,19 +6,20 @@ from simulation.runner import SimulationRunner
 
 def main() -> None:
     config = SimulationConfig(
-        duration_seconds=60.0,
-        item_interval_seconds=0.5,
+        duration_seconds=600.0,
+        item_interval_seconds=0.036,
         scan_duration_seconds=0.1,
-        scanner_capacity=1,
+        scanner_capacity=3,
         scanner_error_rate=0.0,
         conveyor_length_meters=10.0,
         conveyor_speed_mps=2.0,
-        conveyor_capacity=10,
+        conveyor_capacity=150,
         buffer_capacity=100,
         buffer_retry_interval_seconds=0.05,
         default_destination=1,
         sorter_duration_seconds=0.1,
-        output_bin_capacity=1000,
+        output_bin_capacity=20000,
+        sorter_capacity=3,
     )
 
     runner = SimulationRunner(config)

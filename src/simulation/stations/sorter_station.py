@@ -16,9 +16,17 @@ class SorterStation:
         sensor: Sensor,
         sorter: Sorter,
         sort_duration_seconds: float,
+        capacity: int = 1,
     ) -> None:
         if sort_duration_seconds <= 0:
-            raise ValueError("Sorter duration must be greater than 0")
+            raise ValueError(
+                "Sort duration must be greater than 0"
+            )
+
+        if capacity <= 0:
+            raise ValueError(
+                "Sorter capacity must be greater than 0"
+            )
 
         self._environment = environment
         self._controller = controller
@@ -26,9 +34,11 @@ class SorterStation:
         self._sorter = sorter
         self._sort_duration_seconds = sort_duration_seconds
 
+        # Represents parallel sorter processing slots.
+        # Представляет параллельные каналы обработки сортировщика.
         self._resource = simpy.Resource(
             environment,
-            capacity=1,
+            capacity=capacity,
         )
 
     @property
@@ -42,13 +52,9 @@ class SorterStation:
     def process(
         self,
         item: Item,
-    ) -> Generator[
-        simpy.events.Event,
-        None,
-        Item | None,
-    ]:
-        # Wait until the sorter becomes available.
-        # Ждём освобождения сортировщика.
+    ) -> Generator[simpy.events.Event, None, Item | None]:
+        # Wait until one sorter processing slot becomes available.
+        # Ждём освобождения одного канала сортировщика.
         with self._resource.request() as request:
             yield request
 
@@ -60,9 +66,11 @@ class SorterStation:
                 self._controller.send_to_manual_processing(item)
                 return None
 
-            # Simulate physical sorter processing time.
-            # Моделируем физическое время работы сортировщика.
-            yield self._environment.timeout(self._sort_duration_seconds)
+            # Simulate physical sorting time.
+            # Имитируем физическое время сортировки.
+            yield self._environment.timeout(
+                self._sort_duration_seconds
+            )
 
             return self._controller.process_sorter_event(
                 sensor_event,

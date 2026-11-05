@@ -109,7 +109,8 @@ class SimulationRunner:
             controller=self.controller,
             sensor=sorter_sensor,
             sorter=sorter,
-            sort_duration_seconds=(config.sorter_duration_seconds),
+            sort_duration_seconds=config.sorter_duration_seconds,
+            capacity=config.sorter_capacity,
         )
 
         self.item_generator = ItemGenerator(
@@ -143,6 +144,24 @@ class SimulationRunner:
 
         base_report = self.statistics.generate_report()
 
+        simulation_time = float(self.environment.now)
+
+        arrival_rate_items_per_second = (
+            len(self._generated_items) / simulation_time if simulation_time > 0 else 0.0
+        )
+
+        sorted_throughput_items_per_second = (
+            self.statistics.sorted_items / simulation_time
+            if simulation_time > 0
+            else 0.0
+        )
+
+        in_flight_items = (
+            len(self._generated_items)
+            - self.statistics.sorted_items
+            - self.statistics.manual_processing_items
+        )
+
         report: SimulationReport = {
             **base_report,
             "generated_items": len(self._generated_items),
@@ -158,6 +177,13 @@ class SimulationRunner:
             "sorter_in_use": self.sorter_station.in_use,
             "buffer_current_load": len(self.buffer.items),
             "output_bin_current_load": (self.output_bin.current_load),
+            "arrival_rate_items_per_second": (arrival_rate_items_per_second),
+            "arrival_rate_items_per_hour": (arrival_rate_items_per_second * 3600),
+            "sorted_throughput_items_per_second": (sorted_throughput_items_per_second),
+            "sorted_throughput_items_per_hour": (
+                sorted_throughput_items_per_second * 3600
+            ),
+            "in_flight_items": in_flight_items,
         }
 
         return report

@@ -17,3 +17,11 @@ class SimulationReport(StatisticsReport):
 
     buffer_current_load: int
     output_bin_current_load: int
+
+    arrival_rate_items_per_second: float
+    arrival_rate_items_per_hour: float
+
+    sorted_throughput_items_per_second: float
+    sorted_throughput_items_per_hour: float
+
+    in_flight_items: int
