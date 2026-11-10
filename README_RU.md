@@ -788,4 +788,3 @@ GitHub:
 ```text
 https://github.com/dekoithub
 ```
-```
