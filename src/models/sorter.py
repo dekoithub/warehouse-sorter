@@ -1,4 +1,13 @@
+import logging
+
+from models.enums import SorterStatus
+from models.exceptions import (
+    EquipmentUnavailableError,
+    UnsupportedDirectionError,
+)
 from models.item import Item
+
+logger = logging.getLogger(__name__)
 
 
 class Sorter:
@@ -7,57 +16,73 @@ class Sorter:
         sorter_id: int,
         supported_directions: list[int],
         is_available: bool,
-    ):
+    ) -> None:
+
+        if sorter_id <= 0:
+            raise ValueError("Sorter id must be greater than 0")
+
+        if not supported_directions:
+            raise ValueError("Supported directions cannot be empty")
+
+        if any(direction <= 0 for direction in supported_directions):
+            raise ValueError("Supported directions must be greater than 0")
+
+        if len(supported_directions) != len(set(supported_directions)):
+            raise ValueError("Supported directions must be unique")
+
         self.sorter_id = sorter_id
-        self.status = "IDLE"
-        self.current_direction = None
+        self.status = SorterStatus.IDLE if is_available else SorterStatus.UNAVAILABLE
+        self.current_direction: int | None = None
         self.supported_directions = supported_directions
-        self.is_available = is_available
 
-    def accept_item(self, item: Item):
-        if not self.is_available:
-            return False
+    @property
+    def is_available(self) -> bool:
+        return self.status == SorterStatus.IDLE
 
-        if item is None:
-            return False
+    def enable(self) -> None:
+        self.status = SorterStatus.IDLE
 
-        return True
+        logger.info(
+            "Sorter %s enabled",
+            self.sorter_id,
+        )
 
-    def sort_item(self, item: Item, direction: int):
-        if not self.is_available:
-            return False
+    def disable(self) -> None:
+        self.status = SorterStatus.UNAVAILABLE
 
-        if item is None:
-            return False
+        logger.info(
+            "Sorter %s disabled",
+            self.sorter_id,
+        )
 
-        if not self.change_direction(direction):
-            return False
-
-        return item
-
-    def send_item(self, item: Item):
-        if not self.is_available:
-            return False
-
-        if item is None:
-            return False
+    def sort_item(
+        self,
+        item: Item,
+        direction: int,
+    ) -> Item:
+        self._change_direction(direction)
 
         return item
 
-    def change_direction(self, direction: int):
+    def _change_direction(self, direction: int) -> None:
         if not self.is_available:
-            return False
+            raise EquipmentUnavailableError(f"Sorter {self.sorter_id} is unavailable")
 
         if direction not in self.supported_directions:
-            return False
+            raise UnsupportedDirectionError(f"Direction {direction} is not supported")
 
         self.current_direction = direction
-        return True
 
-    def report_status(self):
-        return self.status
+        logger.debug(
+            "Sorter %s changed direction to %s",
+            self.sorter_id,
+            direction,
+        )
 
-    def report_error(self):
-        self.status = "ERROR"
-        self.is_available = False
-        return "Sorter error"
+    def mark_error(self) -> None:
+        self.status = SorterStatus.ERROR
+
+        logger.error(
+            "Sorter %s entered error state",
+            self.sorter_id,
+        )

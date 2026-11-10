@@ -1,4 +1,10 @@
+import logging
+
+from models.enums import BufferStatus
+from models.exceptions import BufferFullError
 from models.item import Item
+
+logger = logging.getLogger(__name__)
 
 
 class Buffer:
@@ -6,50 +12,62 @@ class Buffer:
         self,
         buffer_id: int,
         capacity: int,
-    ):
+    ) -> None:
+        if buffer_id <= 0:
+            raise ValueError("Buffer id must be greater than 0")
+
+        if capacity <= 0:
+            raise ValueError("Buffer capacity must be greater than 0")
+
         self.buffer_id = buffer_id
         self.capacity = capacity
-        self.items: list[Item] = []
-        self.status = "EMPTY"
-        self.is_full = False
+        self._items: list[Item] = []
+        self._has_error = False
 
-    def add_item(self, item: Item):
+    @property
+    def items(self) -> tuple[Item, ...]:
+        return tuple(self._items)
+
+    @property
+    def is_full(self) -> bool:
+        return len(self._items) >= self.capacity
+
+    @property
+    def status(self) -> BufferStatus:
+        if self._has_error:
+            return BufferStatus.ERROR
+
+        if not self._items:
+            return BufferStatus.EMPTY
+
+        if self.is_full:
+            return BufferStatus.FULL
+
+        return BufferStatus.OCCUPIED
+
+    def add_item(self, item: Item) -> bool:
+        if self.is_full:
+            raise BufferFullError(f"Buffer {self.buffer_id} is full")
+
         if not self.is_available():
             return False
 
-        self.items.append(item)
-
-        if len(self.items) >= self.capacity:
-            self.is_full = True
-            self.status = "FULL"
-        else:
-            self.status = "OCCUPIED"
-
+        self._items.append(item)
         return True
 
-    def release_item(self):
-        if not self.items:
+    def release_item(self) -> Item | None:
+        if not self._items:
             return None
 
-        item = self.items.pop(0)
-        self.is_full = False
+        return self._items.pop(0)
 
-        if self.items:
-            self.status = "OCCUPIED"
-        else:
-            self.status = "EMPTY"
+    def is_available(self) -> bool:
+        return not self._has_error and not self.is_full
 
-        return item
+    def mark_error(self) -> None:
+        self._has_error = True
 
-    def is_available(self):
-        if self.status == "ERROR":
-            return False
-
-        return len(self.items) < self.capacity
-
-    def report_status(self):
-        return self.status
-
-    def report_error(self):
-        self.status = "ERROR"
-        return "Buffer error"
+        logger.error(
+            "Buffer %s entered error state",
+            self.buffer_id,
+        )

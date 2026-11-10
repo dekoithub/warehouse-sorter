@@ -1,23 +1,25 @@
 import time
 
-from models.item import Item
-from models.scanner import Scanner
-from models.wms import WMS
-from models.controller import Controller
-from models.conveyor import Conveyor
-from models.sensor import Sensor
+from application.controller import Controller
+from logging_config import configure_logging
 from models.buffer import Buffer
-from models.sorter import Sorter
+from models.conveyor import Conveyor
+from models.enums import ItemStatus
+from models.item import Item
 from models.output_bin import OutputBin
+from models.scanner import Scanner
+from models.sensor import Sensor
+from models.sorter import Sorter
 from models.statistics import Statistics
+from models.wms import WMS
 
 
 def process_conveyor_to_sorter(
-        item: Item,
-        controller: Controller,
-        sorter_sensor: Sensor,
-        sorter: Sorter,
-):
+    item: Item,
+    controller: Controller,
+    sorter_sensor: Sensor,
+    sorter: Sorter,
+) -> Item:
     item_conveyor = None
 
     for conveyor in controller.conveyors:
@@ -40,15 +42,17 @@ def process_conveyor_to_sorter(
 
     released_item.update_location("Sorter Sensor")
 
-    sorter_detected = sorter_sensor.detect_item(released_item)
+    sorter_event = sorter_sensor.detect_item(released_item)
 
-    if not sorter_detected:
+    if sorter_event is None:
         controller.send_to_manual_processing(released_item)
         return released_item
 
-    sorter_event = sorter_sensor.send_signal(released_item)
-
-    controller.process_sorter_event(sorter_event, released_item, sorter)
+    controller.process_sorter_event(
+        sorter_event,
+        released_item,
+        sorter,
+    )
 
     controller.update_statistics()
 
@@ -61,23 +65,21 @@ def process_item(
     sensor: Sensor,
     sorter_sensor: Sensor,
     sorter: Sorter,
-):
+) -> Item:
     controller.register_item(item)
 
-    detected = sensor.detect_item(item)
+    sensor_event = sensor.detect_item(item)
 
-    if not detected:
+    if sensor_event is None:
         controller.send_to_manual_processing(item)
         return item
-
-    sensor_event = sensor.send_signal(item)
 
     controller.process_sensor_event(
         sensor_event,
         item,
     )
 
-    if item.status != "MOVING":
+    if item.status != ItemStatus.MOVING:
         return item
 
     return process_conveyor_to_sorter(
@@ -88,7 +90,9 @@ def process_item(
     )
 
 
-def main():
+def main() -> None:
+    configure_logging()
+
     item = Item(
         id=1,
         barcode="4601234567890",
@@ -99,7 +103,7 @@ def main():
         category="Electronics",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -114,7 +118,7 @@ def main():
         category="Books",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -129,7 +133,7 @@ def main():
         category="Home",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -144,7 +148,7 @@ def main():
         category="Clothes",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -159,7 +163,7 @@ def main():
         category="Toys",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -174,7 +178,7 @@ def main():
         category="Sports",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -189,7 +193,7 @@ def main():
         category="Kitchen",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -204,7 +208,7 @@ def main():
         category="Office",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -219,7 +223,7 @@ def main():
         category="Garden",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -234,7 +238,7 @@ def main():
         category="Tools",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -249,7 +253,7 @@ def main():
         category="Accessories",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -264,7 +268,7 @@ def main():
         category="Decor",
         delivery_type="Courier",
         is_flammable=False,
-        status="CREATED",
+        status=ItemStatus.CREATED,
         destination=None,
         location="Scanner",
     )
@@ -307,7 +311,7 @@ def main():
         is_available=True,
     )
 
-    controller.conveyors.append(conveyor)
+    controller.register_conveyor(conveyor)
 
     sensor = Sensor(
         sensor_id=1,
@@ -339,8 +343,8 @@ def main():
 
     statistics = Statistics()
 
-    controller.buffers.append(buffer)
-    controller.output_bins.append(output_bin)
+    controller.register_buffer(buffer)
+    controller.register_output_bin(output_bin)
     controller.statistics = statistics
 
     start_time = time.perf_counter()
@@ -380,7 +384,7 @@ def main():
 
     items.append(fifth_item)
 
-    sorter.is_available = False
+    sorter.disable()
 
     process_item(
         sixth_item,
@@ -390,11 +394,11 @@ def main():
         sorter,
     )
 
-    sorter.is_available = True
+    sorter.enable()
 
     items.append(sixth_item)
 
-    sorter.is_available = False
+    sorter.disable()
 
     process_item(
         seventh_item,
@@ -412,13 +416,12 @@ def main():
         sorter,
     )
 
-    sorter.is_available = True
+    sorter.enable()
 
     items.append(seventh_item)
     items.append(eighth_item)
 
-    wms.is_available = False
-    wms.status = "UNAVAILABLE"
+    wms.disable()
 
     process_item(
         ninth_item,
@@ -428,8 +431,7 @@ def main():
         sorter,
     )
 
-    wms.is_available = True
-    wms.status = "AVAILABLE"
+    wms.enable()
 
     items.append(ninth_item)
 
@@ -438,9 +440,9 @@ def main():
         capacity=2,
     )
 
-    controller.buffers.append(backup_buffer)
+    controller.register_buffer(backup_buffer)
 
-    conveyor.is_available = False
+    conveyor.disable()
 
     process_item(
         tenth_item,
@@ -450,12 +452,11 @@ def main():
         sorter,
     )
 
-    conveyor.is_available = True
+    conveyor.enable()
 
     items.append(tenth_item)
 
-    sensor.is_active = False
-    sensor.status = "INACTIVE"
+    sensor.deactivate()
 
     process_item(
         eleventh_item,
@@ -465,8 +466,7 @@ def main():
         sorter,
     )
 
-    sensor.is_active = True
-    sensor.status = "ACTIVE"
+    sensor.activate()
 
     items.append(eleventh_item)
 
@@ -482,7 +482,7 @@ def main():
 
     end_time = time.perf_counter()
 
-    statistics.simulation_time = end_time - start_time
+    statistics.set_simulation_time(end_time - start_time)
 
     for current_item in items:
         print()
@@ -493,6 +493,9 @@ def main():
         print("Location:", current_item.location)
 
     report = controller.update_statistics()
+
+    if report is None:
+        raise RuntimeError("Statistics report is unavailable")
 
     print()
     print("=== System report ===")
@@ -507,6 +510,7 @@ def main():
     print("Success rate:", report["success_rate"])
     print("Simulation time:", report["simulation_time"])
     print("Throughput:", report["throughput"])
-                    
+
+
 if __name__ == "__main__":
     main()
