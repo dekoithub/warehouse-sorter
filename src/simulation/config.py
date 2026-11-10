@@ -13,6 +13,7 @@ class SimulationConfig:
     buffer_capacity: int = 100
     buffer_retry_interval_seconds: float = 0.05
     default_destination: int = 1
+    destination_count: int = 1
     sorter_duration_seconds: float = 0.1
     sorter_capacity: int = 1
     output_bin_capacity: int = 100
@@ -22,6 +23,11 @@ class SimulationConfig:
         if self.duration_seconds <= 0:
             raise ValueError(
                 "Simulation duration must be greater than 0"
+            )
+
+        if self.destination_count <= 0:
+            raise ValueError(
+                "Destination count must be greater than 0"
             )
 
         if self.item_interval_seconds <= 0:

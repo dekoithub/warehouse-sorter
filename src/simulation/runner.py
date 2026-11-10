@@ -38,11 +38,16 @@ class SimulationRunner:
             error_rate=config.scanner_error_rate,
         )
 
+        self.destinations = list(
+            range(
+                config.default_destination,
+                config.default_destination + config.destination_count,
+            )
+        )
+
         self._wms = WMS(
             routes={},
-            available_destinations=[
-                config.default_destination,
-            ],
+            available_destinations=self.destinations,
             is_available=True,
         )
 
@@ -91,16 +96,28 @@ class SimulationRunner:
 
         sorter = Sorter(
             sorter_id=1,
-            supported_directions=[
-                config.default_destination,
-            ],
+            supported_directions=self.destinations,
             is_available=True,
         )
 
-        self.output_bin = OutputBin(
-            bin_id=config.default_destination,
-            capacity=config.output_bin_capacity,
-        )
+        # Create one output bin for every sorting destination.
+        # Создаём отдельный выходной накопитель для каждого направления.
+        self.output_bins = [
+            OutputBin(
+                bin_id=destination,
+                capacity=config.output_bin_capacity,
+            )
+            for destination in self.destinations
+        ]
+
+        for output_bin in self.output_bins:
+            self.controller.register_output_bin(
+                output_bin
+            )
+
+        # Temporary compatibility alias for existing tests and report.
+        # Временный алиас для совместимости со старыми тестами и отчётом.
+        self.output_bin = self.output_bins[0]
 
         self.controller.register_output_bin(self.output_bin)
 
@@ -176,7 +193,10 @@ class SimulationRunner:
             "sorter_current_queue": (self.sorter_station.queue_length),
             "sorter_in_use": self.sorter_station.in_use,
             "buffer_current_load": len(self.buffer.items),
-            "output_bin_current_load": (self.output_bin.current_load),
+            "output_bin_current_load": sum(
+                output_bin.current_load
+                for output_bin in self.output_bins
+            ),
             "arrival_rate_items_per_second": (arrival_rate_items_per_second),
             "arrival_rate_items_per_hour": (arrival_rate_items_per_second * 3600),
             "sorted_throughput_items_per_second": (sorted_throughput_items_per_second),
@@ -194,11 +214,19 @@ class SimulationRunner:
     ) -> None:
         self._generated_items.append(item)
 
-        # Give each simulated item a valid WMS route.
-        # Назначаем каждому симулируемому товару маршрут WMS.
+        # Distribute generated items evenly across available destinations.
+        # Равномерно распределяем товары по доступным направлениям.
+        destination_index = (
+            (item.id - 1) % len(self.destinations)
+        )
+
+        destination = self.destinations[
+            destination_index
+        ]
+
         self._wms.register_route(
             item.barcode,
-            self.config.default_destination,
+            destination,
         )
 
         self.environment.process(self._process_item(item))

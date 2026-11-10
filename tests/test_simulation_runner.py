@@ -208,3 +208,43 @@ def test_simulation_sends_item_to_manual_processing_when_buffer_is_full() -> Non
     assert any(
         item.status == ItemStatus.MANUAL_PROCESSING for item in runner.generated_items
     )
+
+def test_simulation_supports_400_destinations() -> None:
+    config = SimulationConfig(
+        duration_seconds=5.0,
+        item_interval_seconds=0.01,
+        scan_duration_seconds=0.001,
+        scanner_capacity=10,
+        conveyor_length_meters=0.1,
+        conveyor_speed_mps=10.0,
+        conveyor_capacity=100,
+        buffer_capacity=100,
+        buffer_retry_interval_seconds=0.001,
+        default_destination=1,
+        destination_count=400,
+        sorter_duration_seconds=0.001,
+        sorter_capacity=10,
+        output_bin_capacity=10,
+    )
+
+    runner = SimulationRunner(config)
+
+    report = runner.run()
+
+    assert len(runner.output_bins) == 400
+
+    assert {
+        output_bin.bin_id
+        for output_bin in runner.output_bins
+    } == set(range(1, 401))
+
+    assert len(report["output_bin_load"]) == 400
+
+    assert set(
+        report["output_bin_load"]
+    ) == set(range(1, 401))
+
+    assert all(
+        load > 0
+        for load in report["output_bin_load"].values()
+    )

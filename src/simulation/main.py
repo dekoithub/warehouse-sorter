@@ -20,6 +20,7 @@ def main() -> None:
         sorter_duration_seconds=0.1,
         output_bin_capacity=20000,
         sorter_capacity=3,
+        destination_count=400,
     )
 
     runner = SimulationRunner(config)
